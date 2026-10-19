@@ -4,3 +4,9 @@ export function pressState(u,force=20,ratio=4){const travel=.9*(1-Math.cos(u*TAU
 export function motorState(t,f=50,slip=4){return {fieldAngle:TAU*f*t/100,rotorAngle:TAU*f*t/100*(1-slip/100),ns:60*f,nr:60*f*(1-slip/100),currents:[0,1,2].map(j=>Math.sin(TAU*f*t/100-j*TAU/3))};}
 
 export const windingLayout=Array.from({length:6},(_,i)=>({angle:i*Math.PI/3+Math.PI/2,phase:[0,2,1,0,2,1][i],sign:i%2===0?1:-1}));
+
+export function pneumaticState(u,p=4,d=40){
+ u=((u%1)+1)%1;const advance=u<.5,v=advance?Math.min(1,u/.4):Math.min(1,(u-.5)/.4),smooth=v*v*(3-2*v),x=advance?smooth:1-smooth,moving=v>0&&v<1,area=Math.PI*(d/1000)**2/4,rodArea=area/4;
+ return {advance,x,moving,phase:u<.4?0:u<.5?1:u<.9?2:3,pA:advance?p:0,pB:advance?0:p,forceAdvance:p*1e5*area,forceReturn:p*1e5*(area-rodArea),force:advance?p*1e5*area:-p*1e5*(area-rodArea),positionMM:x*100,paths:advance?['1→2','4→5']:['1→4','2→3'],compressorAngle:u*TAU*8};
+}
+export function reversePneumatic(u){u=((u%1)+1)%1;return u<.4?.9-u:u<.5?.5:u<.9?.9-u:0;}

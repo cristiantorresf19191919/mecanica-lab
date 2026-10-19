@@ -5,3 +5,7 @@
 .motor-wave{margin:18px 0;padding:16px;background:#e6ebdf;border:1px solid var(--line);border-radius:8px}.motor-wave svg{width:100%;display:block;max-height:120px}
 
 body.preview{padding:0}.preview>header,.preview>.machine-nav,.preview .inspector,.preview>.toolbar,.preview>.controls,.preview>.metrics,.preview>.phase-steps,.preview>.explanation{display:none}.preview .workbench{display:block;border:0;border-radius:0}.preview .stage{height:430px}.preview .stage-top{display:none}.preview .stage-bottom>div{display:none}
+
+.air-legend{border:1px solid var(--line);padding:14px;border-radius:8px;font-size:12px;margin:16px 0}.air-legend b{color:#246e77;margin-right:18px}.air-legend span{color:#995c28}.air-legend p{margin:9px 0 0;font-family:ui-monospace,monospace}
+
+#focusPart{font-size:12px;margin-top:16px;width:100%}
