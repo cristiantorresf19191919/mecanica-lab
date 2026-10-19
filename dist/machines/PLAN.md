@@ -16,3 +16,6 @@ PLC extension: two magnetic end-position sensors clipped to the cylinder, their 
 
 ## Coordinación de dos cilindros
 Dos ramales con cilindro, pistón, válvula 5/2, escapes y sensores a0/a1, b0/b1; compresor y regulador comunes. PLC con cuatro entradas y dos salidas. Geometría compartida con el circuito anterior, desplazada en dos filas y con cableado a bornes identificados. El modelo ejecuta las redes que dibuja el ladder: A+ espera a1, B+ espera b1, B− espera b0, A− espera a0. A conserva presión de avance durante ambos movimientos de B. En fallo ambas válvulas retornan por muelle. La ficha Anatomy muestra los dos actuadores y el rack.
+
+## Pupitre de mando
+Pedestal con pulsador verde de marcha, rojo de paro, selector de modo y lámpara RUN. El ladder enseña la retención RUN, permiso de automático y selección de demandas manuales MA/MB. Los mandos HTML tienen equivalentes visuales en 3D. Las válvulas permanecen monoestables: cortar una salida inicia retorno, no retención de posición.
