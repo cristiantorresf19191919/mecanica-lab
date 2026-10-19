@@ -2,6 +2,12 @@ export const TAU=2*Math.PI;
 export function calculate(id,type,a,b,t,on=true){
  const phase=TAU*a*t/100, result={phase,a,b,t,on};
  const metrics=(...x)=>{result.metrics=x;return result};
+ if(type==='resonance'){result.gain=1/Math.hypot(1-a*a,2*b*a);result.lag=Math.atan2(2*b*a,1-a*a);result.x=.01*result.gain*Math.sin(TAU*a*t-result.lag);return metrics(['Amplitud',10*result.gain,'mm'],['Desfase',result.lag*180/Math.PI,'°'],['Excitación',a,'Hz'])}
+ if(type==='standing'){result.f=a*b/2;result.phase=TAU*result.f*t/20;return metrics(['Frecuencia',result.f,'Hz'],['Longitud de onda',2/a,'m'],['Nodos interiores',a-1,''])}
+ if(type==='sequencefield'){result.direction=on?1:-1;result.angle=result.direction*TAU*a*t/100;return metrics(['Campo, 2 polos',result.direction*60*a,'rpm'],['Frecuencia',a,'Hz'],['Amplitud de campo',1.5*b,'pu'])}
+ if(type==='cavitation'){result.vapor=10**(8.07131-1730.63/(233.426+b))*.133322;result.margin=a-result.vapor;return metrics(['Presión de vapor',result.vapor,'kPa abs'],['Margen local',result.margin,'kPa'],['Temperatura',b,'°C'])}
+ if(type==='airlogic'){result.A=a>=3;result.B=b>=3;result.Y=on?(result.A&&result.B):(result.A||result.B);return metrics(['Entrada A',Number(result.A),''],['Entrada B',Number(result.B),''],['Salida Y',Number(result.Y),''])}
+ if(type==='robotarm'){const q=a*Math.PI/180,r=(a+b)*Math.PI/180;result.elbow=[200*Math.cos(q),200*Math.sin(q)];result.tip=[result.elbow[0]+150*Math.cos(r),result.elbow[1]+150*Math.sin(r)];return metrics(['Herramienta x',result.tip[0],'mm'],['Herramienta y',result.tip[1],'mm'],['Alcance radial',Math.hypot(...result.tip),'mm'])}
  if(type==='circuit'){result.i=on?a/b:0;return metrics(['Tensión',a,'V'],['Corriente',result.i,'A'],['Potencia',a*result.i,'W'])}
  if(type==='network'){result.req=on?2*b:b/2;return metrics(['Equivalente',result.req,'Ω'],['Corriente total',a/result.req,'A'],['Por resistencia',on?a/2:a,'V'])}
  if(type==='wave'){result.v=b*Math.sin(phase);return metrics(['Periodo',1000/a,'ms'],['Pico',b,'V'],['RMS',b/Math.SQRT2,'V'])}

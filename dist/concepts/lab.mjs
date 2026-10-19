@@ -1,3 +1,4 @@
+import {drawAdvanced} from './advanced.mjs';
 import {catalog} from './catalog.mjs';
 import {calculate,controllerStep,TAU} from './models.mjs';
 import * as iso from '../anatomy/iso-kit.mjs';
@@ -5,11 +6,12 @@ const id=new URLSearchParams(location.search).get('id')||'threephase',cfg=catalo
 if(!cfg)throw Error('Missing concept '+id);
 const $=s=>document.querySelector(s),canvas=$('#scene'),ctx=canvas.getContext('2d');
 const colors=['#64d7df','#ffbe70','#f28caa'],white='#dbe9e4',muted='#8aaba7',green='#b9dd83';
+let baseline=null,currentModel=null;
 let t=0,last=0,playing=!matchMedia('(prefers-reduced-motion: reduce)').matches,on=true,visible=false,raf=0,control={y:0,integral:0,u:0},history=[];
 $('#title').textContent=cfg.title;document.title=cfg.title;canvas.setAttribute('aria-label',cfg.title+'. '+cfg.insight);
 $('#experiment').textContent=cfg.experiment;$('#insight').textContent=cfg.insight;$('#limit').textContent=cfg.limit;
 for(const name of ['a','b']){const c=cfg[name],el=$('#'+name);Object.assign(el,{min:c.min,max:c.max,step:c.step,value:c.value});$('#l'+name).textContent=c.label;el.setAttribute('aria-label',c.label);el.oninput=()=>{if(cfg.type==='engine'&&name==='b'){playing=false;on=false}labels();render();playLabel()};}
-const toggleNames={circuit:['Abrir interruptor','Cerrar interruptor'],network:['Cambiar a paralelo','Cambiar a serie'],star:['Cambiar a triángulo','Cambiar a estrella'],rc:['Descargar','Cargar'],relay:['Desenergizar bobina','Energizar bobina'],valve:['Retornar','Avanzar'],cylinder:['Ver retorno','Ver avance'],sequence:['Deshabilitar sensor','Habilitar sensor']};
+const toggleNames={sequencefield:['Cambiar a ACB','Cambiar a ABC'],airlogic:['Cambiar a OR','Cambiar a AND'],circuit:['Abrir interruptor','Cerrar interruptor'],network:['Cambiar a paralelo','Cambiar a serie'],star:['Cambiar a triángulo','Cambiar a estrella'],rc:['Descargar','Cargar'],relay:['Desenergizar bobina','Energizar bobina'],valve:['Retornar','Avanzar'],cylinder:['Ver retorno','Ver avance'],sequence:['Deshabilitar sensor','Habilitar sensor']};
 const toggle=toggleNames[cfg.type];if(toggle){$('#toggle').hidden=false;$('#toggle').textContent=toggle[0];$('#toggle').onclick=()=>{on=!on;$('#toggle').textContent=toggle[on?0:1];t=0;render()}}
 const format=n=>Math.abs(n)<1e-8?'0':Number.isInteger(n)?String(n):Math.abs(n)>=1000?n.toFixed(0):n.toFixed(Math.abs(n)<1?3:2);
 function labels(){for(const k of ['a','b'])$('#o'+k).textContent=format(+$(`#${k}`).value)+' '+cfg[k].unit}
@@ -103,17 +105,20 @@ function draw(m){ctx.fillStyle='#102127';ctx.fillRect(0,0,1000,520);text('FIG. '
  const ang=cfg.type==='engine'?m.angle*Math.PI/180:t,r=cfg.type==='engine'?22:a,l=cfg.type==='engine'?70:b,px=300,cy=360,scale=2.3,crx=px+r*Math.sin(ang)*scale,cry=cy-r*Math.cos(ang)*scale,pisty=cy-(r*Math.cos(ang)+Math.sqrt(l*l-r*r*Math.sin(ang)**2))*scale;
  box(200,85,200,230,'#253e45','#628278');box(214,94,172,210,'#102127',null,0);for(let j=0;j<10;j++)line([[190,110+j*20],[210,110+j*20]],'#6a8d83',5);circle(px,cy,r*scale,'#294a50','#6c8d82');line([[px,cy],[crx,cry]],colors[1],12);line([[crx,cry],[px,pisty+20]],'#a2bab0',13);circle(crx,cry,9,'#789389',white);box(220,pisty,160,40,'#7e9e86',green,4);for(const y of [pisty+8,pisty+15])line([[220,y],[380,y]],'#213e35',2);circle(px,cy,15,'#9bb5a6',white);text(cfg.type==='engine'?['ADMISIÓN','COMPRESIÓN','EXPANSIÓN','ESCAPE'][Math.min(3,Math.floor(m.angle/180))]:'BIELA–MANIVELA',300,470,26,green,'center');grid(530,100,400,300);wave(u=>{const th=u*TAU;return (r*Math.cos(th)+Math.sqrt(l*l-r*r*Math.sin(th)**2)-l)/r},colors[0],530,100,400,300);text('Posición del pistón · normalizada',530,440,17,muted);legend=['Posición','Manivela'];
  }
+ const extra=drawAdvanced(id,m,{ctx,text,line,box,circle,arrow,grid,wave,bar,colors,green,white,muted,t});if(extra)legend=extra;
  $('#legend').innerHTML=legend.map((s,i)=>`<span style="--color:${(i===3?green:colors[i%3])}">${s}</span>`).join('');
 }
-function render(){const m=calculate(id,cfg.type,+$('#a').value,+$('#b').value,t,on);if(cfg.type==='control'){m.metrics=[['Medida',control.y,'mm'],['Error',(id==='pi'?70:+$('#a').value)-control.y,'mm'],['Mando',control.u,'%']]};draw(m);$('#metrics').innerHTML=m.metrics.map(([l,n,u])=>`<div class="metric"><small>${l}</small><strong>${format(n)}</strong><em>${u}</em></div>`).join('');$('#scrub').value=t%10;}
+function render(){const dpr=Math.min(devicePixelRatio||1,2);if(canvas.width!==1000*dpr){canvas.width=1000*dpr;canvas.height=520*dpr}ctx.setTransform(dpr,0,0,dpr,0,0);const m=calculate(id,cfg.type,+$('#a').value,+$('#b').value,t,on);if(cfg.type==='control'){m.metrics=[['Medida',control.y,'mm'],['Error',(id==='pi'?70:+$('#a').value)-control.y,'mm'],['Mando',control.u,'%']]};currentModel=m;draw(m);$('#metrics').innerHTML=m.metrics.map(([l,n,u])=>`<div class="metric"><small>${l}</small><strong>${format(n)}</strong><em>${u}</em></div>`).join('');$('#scrub').value=t%10;if(baseline){$('#comparison').innerHTML='<b>CAPTURA A</b> · '+baseline.label+'<div class="comparison-grid">'+m.metrics.map(([label,v,unit],i)=>'<div><small>'+label+'</small><span>'+format(baseline.values[i])+' → '+format(v)+' '+unit+'</span><em>Δ '+format(v-baseline.values[i])+'</em></div>').join('')+'</div>';}}
 function playLabel(){$('#play').textContent=playing?'Pausar':'Reproducir';$('#play').setAttribute('aria-pressed',String(playing))}
 function start(){if(!raf&&visible&&playing){last=performance.now();raf=requestAnimationFrame(loop)}}
-function loop(now){raf=0;if(!playing||!visible)return;const dt=Math.min((now-last)/1000,.035);last=now;t+=dt;if(cfg.type==='control'){const a=+$('#a').value,b=+$('#b').value;for(let i=0;i<4;i++)controllerStep(control,id==='pi'?70:a,id==='pi'?a:b,id==='pi'?b:0,dt/4);history.push({t,y:control.y});history=history.filter(h=>h.t>t-20)}render();raf=requestAnimationFrame(loop)}
+function loop(now){raf=0;if(!playing||!visible)return;const dt=Math.min((now-last)/1000,.035);last=now;const scaledDt=dt*Number($('#speed').value);t+=scaledDt;if(cfg.type==='control'){const a=+$('#a').value,b=+$('#b').value;for(let i=0;i<4;i++)controllerStep(control,id==='pi'?70:a,id==='pi'?a:b,id==='pi'?b:0,scaledDt/4);history.push({t,y:control.y});history=history.filter(h=>h.t>t-20)}render();raf=requestAnimationFrame(loop)}
 $('#play').onclick=()=>{playing=!playing;if(cfg.type==='engine')on=true;playLabel();start()};$('#reset').onclick=()=>{t=0;control={y:0,integral:0,u:0};history=[];render()};$('#scrub').oninput=()=>{playing=false;t=+$('#scrub').value;playLabel();if(cfg.type==='control'){control={y:0,integral:0,u:0};history=[];const a=+$('#a').value,b=+$('#b').value;for(let s=0;s<t;s+=.01){controllerStep(control,id==='pi'?70:a,id==='pi'?a:b,id==='pi'?b:0,.01);history.push({t:s,y:control.y})}}render()};
 $('#expand').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{}};
 new IntersectionObserver(entries=>{visible=entries.at(-1).isIntersecting;if(visible)start();else if(raf){cancelAnimationFrame(raf);raf=0}}).observe(canvas);
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',e=>{if(e.matches){playing=false;playLabel()}});
 window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='lab-pause'){playing=false;playLabel()}});
+$('#zoom').onclick=()=>{const enabled=$('.screen').classList.toggle('zoomed');$('#zoom').textContent=enabled?'Vista completa':'Zoom ×1,6';$('#zoom').setAttribute('aria-pressed',String(enabled))};
+$('#capture').onclick=()=>{if(baseline){baseline=null;$('#comparison').hidden=true;$('#capture').textContent='Comparar A/B';return}baseline={values:currentModel.metrics.map(m=>m[1]),label:cfg.a.label+' '+$('#a').value+' '+cfg.a.unit+' · '+cfg.b.label+' '+$('#b').value+' '+cfg.b.unit+' · t '+t.toFixed(2)+' s'};$('#comparison').hidden=false;$('#capture').textContent='Borrar captura A';render()};
 playLabel();render();
 // The physical instrument inset is built with Anatomy; plots remain explicit engineering graphs.
 if(['wave','three','power','rectify','rc','pwm','adc'].includes(cfg.type)){
@@ -129,3 +134,14 @@ if(['wave','three','power','rectify','rc','pwm','adc'].includes(cfg.type)){
  const link=document.createElement('link');link.rel='stylesheet';link.href='../anatomy/iso.css';document.head.append(link);
 }
 let lastHeight=0;new ResizeObserver(()=>{const h=Math.ceil(document.body.getBoundingClientRect().height);if(h!==lastHeight){lastHeight=h;parent.postMessage({type:'concept-height',height:h},location.origin)}}).observe(document.body);
+const challenges={
+resonance:['Con r = 1, ζ = 0,1 y deformación estática de 10 mm, ¿cuál es la amplitud en mm?',50,.1,'M = 1/(2ζ) = 5. La amplitud es 5 × 10 = 50 mm.'],
+standing:['Para L = 1 m, v = 20 m/s y modo n = 3, calcula la frecuencia en Hz.',30,.1,'f = nv/(2L) = 3 × 20 / 2 = 30 Hz.'],
+phasesequence:['En secuencia ABC, con 50 Hz y dos polos, calcula el módulo de la velocidad del campo en rpm.',3000,1,'ns = 120 × 50 / 2 = 3 000 rpm. ACB invierte el signo.'],
+cavitation:['Con p absoluta = 1,5 kPa y p de vapor = 2,34 kPa, ¿cuál es el margen local en kPa?',-.84,.02,'Margen = 1,5 − 2,34 = −0,84 kPa. Es negativo.'],
+airlogic:['Para AND, con A = 4 bar y B = 0 bar (umbral 3 bar), escribe la salida lógica: 0 o 1.',0,0,'A está activa y B no. AND necesita las dos: Y = 0.'],
+robotarm:['Con L₁ = 200 mm, L₂ = 150 mm, θ₁ = 0° y θ₂ = 90°, calcula la coordenada y en mm.',150,.1,'y = 200 sen 0° + 150 sen 90° = 150 mm.'],
+threephase:['Para una estrella equilibrada con 120 V RMS de fase, calcula la tensión de línea en V.',120*Math.sqrt(3),.2,'VL = √3 × 120 ≈ 207,85 V.'],
+motor:['Con 50 Hz, dos polos y s = 4 %, calcula las rpm del rotor.',2880,1,'ns = 3 000 rpm; n = 3 000(1 − 0,04) = 2 880 rpm.'],
+pwm:['Con pulsos de 12 V y D = 25 %, calcula la tensión RMS en V.',6,.01,'Vrms = V√D = 12√0,25 = 6 V.']};
+if(challenges[id]){const [question,answer,tolerance,explanation]=challenges[id];$('#challenge').hidden=false;$('#challengeQuestion').textContent=question;$('#challengeForm').onsubmit=e=>{e.preventDefault();const raw=$('#challengeInput').value.trim().replace(',','.');const value=Number(raw);if(!raw||!Number.isFinite(value)){$('#challengeFeedback').textContent='Escribe un número válido; puedes usar coma decimal.';return}const correct=Math.abs(value-answer)<=tolerance+1e-9;$('#challengeFeedback').textContent=correct?'Correcto. '+explanation:'Todavía no. '+explanation;};}
