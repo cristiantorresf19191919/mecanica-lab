@@ -1,0 +1,63 @@
+import * as T from 'three';
+import {windingLayout} from './model.mjs';
+export const palette={steel:0x80958b,light:0xc7d2bc,dark:0x344d44,copper:0xb58a57,seal:0x243b33,lime:0xd3ed81,oil:0x88b9ab,phase:[0x65adba,0xd6a16d,0xb283b4]};
+export function buildMachine(kind,scene){
+ const root=new T.Group();scene.add(root);const groups={},pickables=[],covers=[],exploded=[],updaters=[];
+ const mat=(color,metalness=.5,roughness=.35)=>new T.MeshStandardMaterial({color,metalness,roughness});
+ const materials=Object.fromEntries(Object.entries(palette).filter(([k])=>k!=='phase').map(([k,v])=>[k,mat(v)]));
+ function group(id,ex=[0,0,0]){const g=new T.Group();g.userData.part=id;root.add(g);groups[id]=g;exploded.push({g,base:g.position.clone(),offset:new T.Vector3(...ex)});return g}
+ function mesh(geo,color,parent,pos=[0,0,0]){const material=typeof color==='string'?materials[color].clone():mat(color);const o=new T.Mesh(geo,material);o.position.set(...pos);o.castShadow=true;o.receiveShadow=true;parent.add(o);pickables.push(o);return o}
+ const box=(w,h,d,color,p,pos)=>mesh(new T.BoxGeometry(w,h,d),color,p,pos);
+ const cyl=(r,h,color,p,pos,axis='y',segments=48)=>{const o=mesh(new T.CylinderGeometry(r,r,h,segments),color,p,pos);if(axis==='z')o.rotation.x=Math.PI/2;if(axis==='x')o.rotation.z=Math.PI/2;return o};
+ const tor=(r,tube,color,p,pos,axis='z')=>{const o=mesh(new T.TorusGeometry(r,tube,10,64),color,p,pos);if(axis==='y')o.rotation.x=Math.PI/2;return o};
+ const link=(a,b,r,color,p)=>{const av=new T.Vector3(...a),bv=new T.Vector3(...b),o=cyl(r,av.distanceTo(bv),color,p,av.clone().add(bv).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),bv.sub(av).normalize());return o};
+ const bolt=(x,y,z,p,axis='y')=>{const o=cyl(.055,.06,'light',p,[x,y,z],axis,6);return o};
+ function tube(points,r,color,p){const curve=new T.CatmullRomCurve3(points.map(v=>new T.Vector3(...v)));return mesh(new T.TubeGeometry(curve,60,r,10,false),color,p)}
+ function shell(r,h,color,p,pos,axis='y'){const a=new T.Group();p.add(a);a.position.set(...pos);if(axis==='z')a.rotation.x=Math.PI/2;const back=mesh(new T.CylinderGeometry(r,r,h,64,1,true,Math.PI/2,Math.PI),color,a);back.material.side=T.DoubleSide;const front=mesh(new T.CylinderGeometry(r,r,h,64,1,true,-Math.PI/2,Math.PI),color,a);front.material.side=T.DoubleSide;covers.push(front);return a}
+ const base=group('base');box(kind==='hydraulic'?7:5,.18,3.5,'dark',base,[0,.12,0]);for(const x of (kind==='hydraulic'?[-3,3]:[-2,2]))for(const z of [-1.3,1.3]){cyl(.21,.16,'seal',base,[x,-.05,z]);bolt(x,.24,z,base)}
+ const ground=new T.Mesh(new T.PlaneGeometry(200,200),new T.ShadowMaterial({opacity:.16}));ground.rotation.x=-Math.PI/2;ground.position.y=-.14;ground.receiveShadow=true;scene.add(ground);
+ if(kind==='engine'){
+  const bearing=group('bearing');for(const z of [-.7,.7]){box(.9,.6,.35,'steel',bearing,[0,.51,z]);tor(.22,.09,'light',bearing,[0,1.1,z]);for(const x of [-.32,.32])bolt(x,.78,z,bearing)}
+  const crank=group('crank');cyl(.12,2.5,'light',crank,[0,1.1,0],'z');const rotate=new T.Group();crank.add(rotate);rotate.position.y=1.1;
+  for(const z of [-.28,.28]){box(.28,.7,.15,'steel',rotate,[0,.23,z]);cyl(.35,.16,'dark',rotate,[0,-.17,z],'z')}cyl(.12,.65,'copper',rotate,[0,.55,0],'z');
+  const fly=group('flywheel',[0,0,1.8]);fly.position.set(0,1.1,1.15);exploded.at(-1).base.copy(fly.position);tor(.85,.13,'steel',fly,[0,0,0]);cyl(.22,.22,'dark',fly,[0,0,0],'z');for(let i=0;i<6;i++){const a=i*Math.PI/3;link([.22*Math.cos(a),.22*Math.sin(a),0],[.8*Math.cos(a),.8*Math.sin(a),0],.06,'light',fly)}
+  const rod=group('rod'),rodBody=link([0,0,0],[0,1.85,0],.105,'copper',rod);tor(.16,.055,'light',rod,[0,0,0]);tor(.12,.045,'light',rod,[0,1.85,0]);
+  const piston=group('piston');cyl(.68,.5,'light',piston,[0,0,0]);cyl(.08,1.4,'steel',piston,[0,0,0],'z');for(const y of [.08,.16,.23])tor(.682,.021,'seal',piston,[0,y,0],'y');for(const x of [-.42,.42])cyl(.075,.013,'dark',piston,[x,-.08,.68],'z');
+  for(const x of [-.9,.9]){box(.16,1.94,.16,'steel',bearing,[x,1.18,-.5]);bolt(x,.27,-.5,bearing)}
+  const liner=group('liner',[-2.2,0,0]);shell(.77,2.1,'steel',liner,[0,3.15,0]);for(let j=0;j<8;j++){const o=mesh(new T.TorusGeometry(.8,.045,6,64,Math.PI),'steel',liner,[0,2.25+j*.24,0]);o.rotation.x=Math.PI/2;o.rotation.z=Math.PI;}for(const x of [-.9,.9]){box(.12,2.05,.12,'steel',liner,[x,3.12,-.5]);bolt(x,4.18,-.5,liner)}
+  const head=group('head',[0,1.65,0]);box(1.9,.2,1.7,'steel',head,[0,4.3,0]);for(const x of [-.78,.78])for(const z of [-.66,.66]){cyl(.045,.35,'dark',head,[x,4.4,z]);bolt(x,4.59,z,head)}
+  const inlet=group('intake',[0,1.65,0]),outlet=group('exhaust',[0,1.65,0]);for(const [g,x]of [[inlet,-.36],[outlet,.36]]){cyl(.23,.06,'light',g,[x,4.08,0]);cyl(.04,.8,'light',g,[x,4.49,0]);cyl(.12,.1,'dark',g,[x,4.75,0]);for(let i=0;i<6;i++)tor(.105,.014,'steel',g,[x,4.48+i*.04,0],'y');cyl(.1,.06,'light',g,[x,4.93,0])}
+  const spark=group('spark',[0,1.65,0]);cyl(.09,.42,'light',spark,[0,4.63,.38]);cyl(.055,.25,'copper',spark,[0,4.3,.38]);for(let i=0;i<5;i++)tor(.1,.015,'light',spark,[0,4.6+i*.045,.38],'y');
+  const gas=mesh(new T.CylinderGeometry(.66,.66,1,48),palette.lime,root,[0,3.8,0]);gas.material.transparent=true;gas.material.opacity=.18;gas.material.depthWrite=false;gas.castShadow=false;
+  const ignition=mesh(new T.SphereGeometry(.065,12,12),0xffd78c,spark,[0,4.07,.38]);ignition.material.emissive.setHex(0xffad39);
+  const charge=[];for(let i=0;i<12;i++){const dot=mesh(new T.SphereGeometry(.035,8,8),'oil',root);charge.push(dot)}
+  updaters.push((m,e)=>{ignition.material.emissiveIntensity=3*Math.exp(-Math.pow((uCycle(m.angle)-.5)/.018,2));rotate.rotation.z=-m.angle;fly.rotation.z=-m.angle;rod.position.set(...m.pin);rod.rotation.z=-Math.atan2(-m.pin[0],m.pistonY-m.pin[1]);piston.position.y=m.pistonY;inlet.position.y=1.65*e-m.intake;outlet.position.y=1.65*e-m.exhaust;const h=Math.max(.01,4.02-m.pistonY-.25);gas.scale.y=h;gas.position.y=m.pistonY+.25+h/2;gas.material.color.setHex([0x8db8a9,0xc5d7b4,0xf0b45c,0xa6a99d][m.phase]);gas.material.opacity=(m.phase===2?.38:.15)*(1-e);charge.forEach((p,i)=>{const a=i*2.4;const v=((m.angle/TAU+i/12)%1);p.position.set(.45*Math.cos(a),m.pistonY+.28+v*h,.45*Math.sin(a));p.visible=e<.05&&(m.phase===0||m.phase===3)});});
+ }else if(kind==='hydraulic'){
+  const pipe=group('pipe',[0,0,1.3]);tube([[-2,.68,0],[-2,.45,.7],[-1.6,.4,.85],[1.6,.4,.85],[2,.45,.7],[2,.68,0]],.11,'oil',pipe);for(const x of [-2,2]){tor(.16,.035,'light',pipe,[x,.69,0],'y');}
+  const fluid=group('fluid');const pistons=[],sleeves=[],fluidCols=[];
+  for(let i=0;i<2;i++){const x=i?2:-2,g=group(i?'output':'input',[i?1.3:-1.3,2.4,0]);const assembly=new T.Group();g.add(assembly);assembly.position.x=x;pistons.push(assembly);cyl(.48,.15,'light',assembly,[0,0,0]);tor(.48,.025,'seal',assembly,[0,0,0],'y');cyl(.09,1.67,'light',assembly,[0,.91,0]);cyl(.7,.12,'steel',assembly,[0,1.8,0]);if(i){for(let j=0;j<3;j++)cyl(.5,.16,'dark',assembly,[0,1.94+j*.17,0]);}
+   const sleeve=group(i?'sleeve2':'sleeve1',[i?1.3:-1.3,0,0]);const whole=new T.Group();sleeve.add(whole);whole.position.x=x;sleeves.push(whole);cyl(.6,.35,'steel',whole,[0,.385,0]);shell(.51,2.35,'steel',whole,[0,1.85,0]);for(const y of [.65,3.05]){tor(.53,.09,'light',whole,[0,y,0],'y');for(let j=0;j<4;j++){const a=Math.PI/4+j*Math.PI/2;bolt(.65*Math.cos(a),y+.07,.65*Math.sin(a),whole)}}for(let j=0;j<4;j++){const a=Math.PI/4+j*Math.PI/2;cyl(.025,2.5,'light',whole,[.65*Math.cos(a),1.85,.65*Math.sin(a)])}
+   const col=cyl(.465,1,'oil',fluid,[x,1.1,0]);col.material.transparent=true;col.material.opacity=.3;col.material.depthWrite=false;fluidCols.push(col);
+  }
+  const gauge=group('gauge');cyl(.32,.14,'dark',gauge,[0,1.2,.8],'z');cyl(.28,.015,'light',gauge,[0,1.2,.88],'z');link([0,.43,.8],[0,.93,.8],.05,'steel',gauge);for(let j=0;j<11;j++){const a=-Math.PI/4+j*Math.PI*1.5/10;const tick=box(.012,.045,.01,'dark',gauge,[.23*Math.cos(a),1.2+.23*Math.sin(a),.9]);tick.rotation.z=a-Math.PI/2;}const needle=box(.015,.22,.015,'dark',gauge,[0,1.2,.92]);needle.geometry.translate(0,.09,0);cyl(.035,.02,'dark',gauge,[0,1.2,.93],'z');
+  const dots=[];for(let i=0;i<12;i++)dots.push(mesh(new T.SphereGeometry(.035,8,8),'lime',pipe));
+  updaters.push((m,e,u)=>{const scale=m.outputRadius/.48;for(let i=0;i<2;i++){const y=i?m.outputY:m.inputY;pistons[i].position.y=y;sleeves[i].scale.set(i?scale:1,1,i?scale:1);pistons[i].scale.set(i?scale:1,1,i?scale:1);const h=y-.075-.69;fluidCols[i].scale.set(i?scale:1,h,i?scale:1);fluidCols[i].position.y=.69+h/2;fluidCols[i].visible=e<.05}needle.rotation.z=-(m.pressure/500000)*Math.PI*1.5+Math.PI*.75;for(let i=0;i<dots.length;i++){const v=(i/12+Math.sin(u*TAU)*.17+1)%1;dots[i].position.set(-1.6+v*3.2,.4,.85);dots[i].visible=e<.05}});
+ }else{
+  const y=2;
+  const housing=group('housing',[0,0,-1.8]);shell(1.65,2.4,'steel',housing,[0,y,0],'z');for(let j=0;j<14;j++){const a=Math.PI/2+j*Math.PI/13;const fin=box(.1,.18,2.6,'steel',housing,[1.71*Math.sin(a),y+1.71*Math.cos(a),0]);fin.rotation.z=-a;}for(const x of [-1,1]){box(.55,.3,1.7,'steel',housing,[x,.36,0]);for(const z of [-.65,.65])bolt(x,.54,z,housing)}
+  const stator=group('stator',[0,0,-.7]);const coils=[];
+  // Six distributed pole groups, oppositely directed coil pairs form a two-pole idealisation.
+  for(let i=0;i<6;i++){const {angle:a,phase,sign}=windingLayout[i],g=new T.Group();stator.add(g);g.position.set(1.31*Math.cos(a),y+1.31*Math.sin(a),0);g.rotation.z=a-Math.PI/2;box(.36,.25,1.95,'dark',g,[0,0,0]);const turns=[];for(let j=0;j<9;j++){const loop=new T.Shape();loop.moveTo(-.24,-.18);loop.lineTo(.24,-.18);loop.lineTo(.24,.18);loop.lineTo(-.24,.18);loop.closePath();const pts=loop.getPoints();const curve=new T.CatmullRomCurve3(pts.slice(0,-1).map(p=>new T.Vector3(p.x,p.y,0)),true,'catmullrom',.05);const wire=mesh(new T.TubeGeometry(curve,32,.035,6,true),palette.phase[phase],g,[0,0,-.88+j*.22]);turns.push(wire)}coils.push({turns,phase,sign});}
+  const rotor=group('rotor',[0,0,2.7]),spin=new T.Group();rotor.add(spin);spin.position.y=y;cyl(.84,1.95,'steel',spin,[0,0,0],'z');for(let j=0;j<14;j++)tor(.847,.012,'dark',spin,[0,0,-.88+j*.135]);for(let j=0;j<12;j++){const a=j*TAU/12;cyl(.04,2.02,'copper',spin,[.86*Math.cos(a),.86*Math.sin(a),0],'z');}for(const z of [-1.04,1.04])tor(.86,.055,'copper',spin,[0,0,z]);cyl(.15,4.3,'light',spin,[0,0,.2],'z');box(.08,.08,.5,'dark',spin,[0,.15,1.7]);box(.07,.14,.03,'lime',spin,[0,.76,1.09]);
+  const bearings=group('bearings',[0,0,3.7]);for(const z of [-1.35,1.35]){tor(.24,.075,'light',bearings,[0,y,z]);for(let j=0;j<8;j++){const a=j*TAU/8;mesh(new T.SphereGeometry(.035,8,8),'dark',bearings,[.24*Math.cos(a),y+.24*Math.sin(a),z+.06])}}
+  const shield=group('shield',[0,0,4.5]);for(const z of [-1.4,1.4]){tor(1.52,.08,'steel',shield,[0,y,z]);for(let j=0;j<4;j++){const a=Math.PI/4+j*Math.PI/2;link([.34*Math.cos(a),y+.34*Math.sin(a),z],[1.45*Math.cos(a),y+1.45*Math.sin(a),z],.06,'steel',shield);bolt(1.52*Math.cos(a),y+1.52*Math.sin(a),z+.08,shield,'z')}}
+  const fan=group('fan',[0,0,-2.7]),fanSpin=new T.Group();fan.add(fanSpin);fanSpin.position.set(0,y,-1.8);cyl(.26,.13,'dark',fanSpin,[0,0,0],'z');for(let j=0;j<8;j++){const a=j*TAU/8;const blade=box(.45,.15,.06,'dark',fanSpin,[.45*Math.cos(a),.45*Math.sin(a),0]);blade.rotation.z=a+.3}
+  const terminal=group('terminal',[0,1,0]);box(.7,.1,.6,'steel',terminal,[0,3.7,0]);box(.75,.3,.65,'dark',terminal,[0,3.9,0]);for(const x of [-.22,0,.22])for(const z of [-.16,.16])cyl(.045,.07,'copper',terminal,[x,4.09,z]);
+  const field=group('field');const arrow=new T.ArrowHelper(new T.Vector3(1,0,0),new T.Vector3(0,y,1.6),1.05,palette.lime,.2,.12);field.add(arrow);const ring=tor(1.12,.013,'lime',field,[0,y,1.6]);ring.material.transparent=true;ring.material.opacity=.6;
+  updaters.push((m,e)=>{spin.rotation.z=m.rotorAngle;fanSpin.rotation.z=m.rotorAngle;arrow.setDirection(new T.Vector3(Math.cos(m.fieldAngle),Math.sin(m.fieldAngle),0));field.visible=e<.05;coils.forEach(c=>c.turns.forEach(o=>{o.material.emissive.setHex(palette.phase[c.phase]);o.material.emissiveIntensity=.12+.45*Math.max(0,c.sign*m.currents[c.phase])}))});
+ }
+ let selected='';return {root,groups,pickables,partCount:pickables.length,update(m,e,u){for(const {g,base,offset}of exploded)g.position.copy(base).addScaledVector(offset,e);for(const f of updaters)f(m,e,u)},setCut(v){covers.forEach(o=>o.visible=!v)},select(id){selected=id;for(const o of pickables){let p=o,match=false;while(p&&p!==root){if(p.userData.part===id)match=true;p=p.parent}o.material.emissive.setHex(match?0x507c28:0);o.material.emissiveIntensity=match?.28:0;}},selected:()=>selected};
+}
+const TAU=Math.PI*2;
+
+function uCycle(angle){return (angle/(4*Math.PI))%1}

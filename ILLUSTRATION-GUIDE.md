@@ -28,3 +28,9 @@ Las figuras nuevas tienen un modelo puro en concepts/models.mjs, controles y sup
 Verifica zoom contenido dentro de la escena, comparación de las tres métricas, cambio de velocidad visual y retos con coma decimal. La velocidad de reproducción no cambia las unidades físicas.
 
 Referencia de contraste para la presión de vapor del agua: [tablas de NIST](https://nvlpubs.nist.gov/nistpubs/jres/80A/jresv80An5-6p775_A1b.pdf), aproximadamente 2,339 kPa a 20 °C. El ajuste simplificado del laboratorio da 2,33 kPa.
+
+## Taller 3D seleccionable
+
+`machines/PLAN.md` documenta el mecanismo y las piezas antes de la geometría. `geometry.mjs` usa Three.js para cuerpos y cámara orbital; `atlas.mjs` usa el kit SVG de Anatomy para las fichas. No confundir sus comprobaciones de navegador y cinemática con una auditoría del runtime 3D beta de Anatomy, que aquí no se utiliza.
+
+Conservar las restricciones del mecanismo: longitud de biela constante, fases de válvulas ligadas a 720°, radios hidráulicos proporcionales a raíz del área, mismo volumen desplazado y misma ralentización para campo y rotor. La selección se ofrece por raycasting y por botones de teclado. La vista separada pausa el mecanismo; no es una simulación física de desmontaje. Revisar juntos corte, despiece, móvil y altura del iframe al modificar escenas.

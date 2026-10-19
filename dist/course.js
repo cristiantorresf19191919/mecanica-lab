@@ -56,7 +56,7 @@ function courseRender(){
  cq('#courseAnswers').innerHTML=l[6].map((answer,i)=>`<button data-course-answer="${i}">${answer}</button>`).join('');cq('#courseFeedback').textContent='';cq('#courseNext').disabled=!courseDone.has(key);
  cq('#courseNext').textContent=trackIndex===courseTracks.length-1&&lessonIndex===tr.lessons.length-1?'Terminar la ruta ✓':'Guardar y continuar →';progress();cq('#courseFinal').hidden=true;
  const concept=l.concept;
- if(figureKind!==concept){figureKind=concept;cq('#courseFigure').style.height='920px';cq('#courseFigure').src='concepts/index.html?id='+concept;cq('#courseFigure').title='Laboratorio: '+l[0];}
+ if(figureKind!==concept){figureKind=concept;cq('#courseFigure').style.height='920px';cq('#courseFigure').src=(['fourstroke','pascal','motor','vfd'].includes(concept)?'machines/index.html?id=':'concepts/index.html?id=')+concept;cq('#courseFigure').title='Laboratorio: '+l[0];}
  const n=window.lessonNotes[concept];
  cq('#courseDeep').innerHTML=n?`<h4>Entender el mecanismo</h4><p>${n[0]}</p><h4>Cómo razonarlo, paso a paso</h4><ol>${n[1].split('|').map(x=>`<li>${x}</li>`).join('')}</ol><div class="misconception"><b>EL ERROR QUE DEBES EVITAR</b><p>${n[2]}</p></div>`:'';
  cq('#figureContext').textContent='Predice el resultado antes de tocar los controles. Cambia una variable, observa las lecturas y explica qué ley se cumple. Usa «Ampliar» para explorar el instrumento a pantalla completa.';
@@ -69,6 +69,6 @@ cq('#courseAnswers').onclick=e=>{const b=e.target.closest('[data-course-answer]'
 cq('#courseNext').onclick=()=>{if(lessonIndex<courseTracks[trackIndex].lessons.length-1)lessonIndex++;else if(trackIndex<courseTracks.length-1){trackIndex++;lessonIndex=0}else{cq('#courseFinal').hidden=false;cq('#courseFinal').textContent=courseDone.size===courseTotal?'¡Terminaste la ruta! Vuelve a los laboratorios y practica con otras condiciones.':`Llevas ${courseDone.size}/${courseTotal} lecciones. Puedes volver a las pendientes desde cada curso.`;return}courseRender();cq('#courseLessonTitle').scrollIntoView({block:'start',behavior:'auto'})};
 cq('#courseAnimation').textContent='Ampliar este laboratorio ↗';
 cq('#courseAnimation').onclick=()=>cq('#courseFigure').requestFullscreen?.().catch(()=>{});
-window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===cq('#courseFigure').contentWindow&&e.data?.type==='concept-height'){const h=Number(e.data.height);if(Number.isFinite(h))cq('#courseFigure').style.height=Math.max(550,Math.min(1800,h))+'px'}});
+window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===cq('#courseFigure').contentWindow&&e.data?.type==='concept-height'){const h=Number(e.data.height);if(Number.isFinite(h))cq('#courseFigure').style.height=Math.max(550,Math.min(3400,h))+'px'}});
 const requested=new URLSearchParams(location.search).get('concept');if(requested){courseTracks.forEach((tr,i)=>{const j=tr.lessons.findIndex(l=>l.concept===requested);if(j>=0){trackIndex=i;lessonIndex=j}})}
 courseRender();
