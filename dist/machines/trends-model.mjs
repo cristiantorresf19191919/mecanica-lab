@@ -1,0 +1,6 @@
+export const traceKeys=['i0','i1','i2','i3','q','qB'];
+export function createTrace(capacity=3001){return {capacity,data:new Array(capacity),head:0,size:0,version:0};}
+export function clearTrace(t){t.head=0;t.size=0;t.version++;}
+export function recordTrace(t,s){const last=t.size?t.data[(t.head+t.size-1)%t.capacity]:null;if(last&&s.time<last.time)clearTrace(t);const point={time:s.time,A:s.x*100,B:s.y*100,state:s.state,cycle:s.cycles};for(const k of traceKeys)point[k]=Number(s[k]);if(t.size&&t.data[(t.head+t.size-1)%t.capacity].time===s.time){t.data[(t.head+t.size-1)%t.capacity]=point;}else if(t.size<t.capacity){t.data[(t.head+t.size++)%t.capacity]=point;}else{t.data[t.head]=point;t.head=(t.head+1)%t.capacity;}t.version++;return point;}
+export function traceWindow(t,end,span){const start=Math.max(0,end-span),points=[];let previous=null;for(let i=0;i<t.size;i++){const p=t.data[(t.head+i)%t.capacity];if(p.time<start)previous=p;else points.push(p);}if(previous)points.unshift(previous);return {start,end:Math.max(span,end),points};}
+export function stepPath(points,key,x,y){if(!points.length)return '';let d='M'+x(points[0].time)+','+y(points[0][key]);for(let i=1;i<points.length;i++)d+='H'+x(points[i].time)+'V'+y(points[i][key]);return d;}

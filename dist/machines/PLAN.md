@@ -25,3 +25,8 @@ Cuatro TON vinculados a los sensores de los extremos, manteniendo las mismas eta
 
 ## Pantalla HMI
 Pedestal lateral con pantalla frontal, marco y cable al PLC. La interfaz muestra posiciones simuladas A/B, cuatro entradas, salidas, modo, RUN, CV/PV y alarmas. Ajustes de T1–T4 y objetivo de lote, aplicados de forma conjunta y sin arrancar. Alarmas de timeout por sensor con reconocimiento separado del rearme y registro conservado.
+
+
+### Tendencias HMI sincronizadas
+La HMI registra posiciones simuladas A/B, cuatro sensores I0.0–I0.3 y salidas Q0.0/Q0.1 después de cada scan de 20 ms. Las ocho trazas comparten eje de tiempo con PLC, ladder y circuito 3D; las señales digitales usan escalones, sin interpolación. El buffer circular conserva 3.001 muestras (60 s), con ventanas de 10, 30 y 60 s. Pausa y avance de un scan operan sobre la simulación común; limpiar trazas conserva PLC y contador, mientras el reinicio general comienza un historial nuevo. En móvil el gráfico permite desplazamiento horizontal dentro de su panel.
+Validado: captura de cada scan, valores idénticos al modelo, buffer circular, reinicio temporal, pausa/scan/reanudación y limpieza sin alterar el contador. Navegador sin errores; iframe móvil completo incluso con explicaciones abiertas.
