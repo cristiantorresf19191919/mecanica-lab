@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {plcGeometry} from './plc-geometry.mjs';
 import {pneumaticGeometry} from './pneumatic.mjs';
 import {windingLayout} from './model.mjs';
 export const palette={steel:0x80958b,light:0xc7d2bc,dark:0x344d44,copper:0xb58a57,seal:0x243b33,lime:0xd3ed81,oil:0x88b9ab,phase:[0x65adba,0xd6a16d,0xb283b4]};
@@ -15,9 +16,9 @@ export function buildMachine(kind,scene){
  const bolt=(x,y,z,p,axis='y')=>{const o=cyl(.055,.06,'light',p,[x,y,z],axis,6);return o};
  function tube(points,r,color,p){const curve=new T.CatmullRomCurve3(points.map(v=>new T.Vector3(...v)));return mesh(new T.TubeGeometry(curve,60,r,10,false),color,p)}
  function shell(r,h,color,p,pos,axis='y'){const a=new T.Group();p.add(a);a.position.set(...pos);if(axis==='z')a.rotation.x=Math.PI/2;const back=mesh(new T.CylinderGeometry(r,r,h,64,1,true,Math.PI/2,Math.PI),color,a);back.material.side=T.DoubleSide;const front=mesh(new T.CylinderGeometry(r,r,h,64,1,true,-Math.PI/2,Math.PI),color,a);front.material.side=T.DoubleSide;covers.push(front);return a}
- const base=group('base');box(kind==='pneumatic'?12:kind==='hydraulic'?7:5,.18,kind==='pneumatic'?5:3.5,'dark',base,[0,.12,0]);for(const x of (kind==='pneumatic'?[-5.5,5.5]:kind==='hydraulic'?[-3,3]:[-2,2]))for(const z of [-1.3,1.3]){cyl(.21,.16,'seal',base,[x,-.05,z]);bolt(x,.24,z,base)}
+ const base=group('base');box(['pneumatic','plc'].includes(kind)?12:kind==='hydraulic'?7:5,.18,['pneumatic','plc'].includes(kind)?5:3.5,'dark',base,[0,.12,0]);for(const x of (['pneumatic','plc'].includes(kind)?[-5.5,5.5]:kind==='hydraulic'?[-3,3]:[-2,2]))for(const z of [-1.3,1.3]){cyl(.21,.16,'seal',base,[x,-.05,z]);bolt(x,.24,z,base)}
  const ground=new T.Mesh(new T.PlaneGeometry(200,200),new T.ShadowMaterial({opacity:.16}));ground.rotation.x=-Math.PI/2;ground.position.y=-.14;ground.receiveShadow=true;scene.add(ground);
- if(kind==='pneumatic'){pneumaticGeometry({root,group,mesh,box,cyl,tor,link,tube,bolt,covers,updaters});}else if(kind==='engine'){
+ if(['pneumatic','plc'].includes(kind)){const H={root,group,mesh,box,cyl,tor,link,tube,bolt,covers,updaters};pneumaticGeometry(H);if(kind==='plc')plcGeometry(H);}else if(kind==='engine'){
   const bearing=group('bearing');for(const z of [-.7,.7]){box(.9,.6,.35,'steel',bearing,[0,.51,z]);tor(.22,.09,'light',bearing,[0,1.1,z]);for(const x of [-.32,.32])bolt(x,.78,z,bearing)}
   const crank=group('crank');cyl(.12,2.5,'light',crank,[0,1.1,0],'z');const rotate=new T.Group();crank.add(rotate);rotate.position.y=1.1;
   for(const z of [-.28,.28]){box(.28,.7,.15,'steel',rotate,[0,.23,z]);cyl(.35,.16,'dark',rotate,[0,-.17,z],'z')}cyl(.12,.65,'copper',rotate,[0,.55,0],'z');

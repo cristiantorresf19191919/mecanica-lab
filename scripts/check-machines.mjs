@@ -14,3 +14,9 @@ for(const p of [1,4,8])for(const d of [20,40,80])for(let i=0;i<1000;i++){const u
 for(const u of [.45,.95])assert.equal(pneumaticState(u).moving,false);
 near(pneumaticState(.2,4,40).forceAdvance,160*Math.PI);near(pneumaticState(.7,4,40).forceReturn,120*Math.PI);
 console.log('PASS: 5/2 routing, chamber pressure, annular force, end dwells and continuous reversal across 9,000 pneumatic states.');
+
+const {createPLC,stepPLC,resetPLCFault}=await import('../dist/machines/plc-model.mjs');
+for(const duration of [1,2,5])for(const dwell of [0,.6,3]){const s=createPLC();for(let i=0;i<Math.ceil((4*duration+4*dwell+3)/.02);i++){stepPLC(s,duration,dwell);assert.ok(s.x>=0&&s.x<=1);if(s.state==='WAIT_END')assert.ok(s.i1);if(s.state==='WAIT_HOME')assert.ok(s.i0);assert.equal(s.q,['EXTEND','WAIT_END'].includes(s.state));}assert.ok(s.cycles>=2);assert.equal(s.fault,false);}
+const fault=createPLC();for(let i=0;i<600;i++)stepPLC(fault,2,.6,true);assert.equal(fault.state,'FAULT');assert.equal(fault.q,false);assert.equal(fault.x,0);assert.equal(fault.i1,false);assert.ok(resetPLCFault(fault));for(let i=0;i<400;i++)stepPLC(fault,2,.6,false);assert.ok(fault.cycles>0);assert.equal(fault.fault,false);
+const mid=createPLC();mid.x=.5;mid.i0=false;assert.equal(resetPLCFault(mid),false);
+console.log('PASS: PLC scan sequencing, sensor-dependent transitions, 9 timing combinations, missing-sensor timeout, output drop, physical return and guarded rearm.');
