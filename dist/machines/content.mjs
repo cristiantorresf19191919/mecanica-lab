@@ -7,3 +7,5 @@ content.dual={...content.plc,title:'Dos cilindros. Una secuencia coordinada.',in
 content.dual.parts.splice(4,0,['A_piston','Pistón A','Se mantiene al final durante B+ y B− porque YA sigue energizada.','A− solo comienza después de b0.'],['B_piston','Pistón B','La posición de B activa b0 o b1 y determina la siguiente etapa.','Los puntos de aire muestran alimentación y escape.']);
 
 content.dual.parts.unshift(['operator','Pupitre: marcha, paro y modo','Marcha habilita RUN. Paro o cambio de modo quita ambas salidas y hace retornar los cilindros. El selector separa automático de órdenes manuales.','Los botones operativos están encima del ladder. Marcha automática requiere a0 y b0; manual permite ordenar A y B por separado.']);
+
+content.dual.intro='A+ → B+ → B− → A− con espera TON en cada extremo. El PLC cuenta cinco ciclos completos y termina el lote en origen. Ajusta las esperas con RUN=0 y pulsa Marcha.';

@@ -19,3 +19,6 @@ Dos ramales con cilindro, pistón, válvula 5/2, escapes y sensores a0/a1, b0/b1
 
 ## Pupitre de mando
 Pedestal con pulsador verde de marcha, rojo de paro, selector de modo y lámpara RUN. El ladder enseña la retención RUN, permiso de automático y selección de demandas manuales MA/MB. Los mandos HTML tienen equivalentes visuales en 3D. Las válvulas permanecen monoestables: cortar una salida inicia retorno, no retención de posición.
+
+## Esperas y lote
+Cuatro TON vinculados a los sensores de los extremos, manteniendo las mismas etapas y órdenes de válvula durante cada espera. El bloque CTU C1 cuenta la finalización de A− más T4, termina el lote al quinto pulso y deja ambos actuadores retraídos. El ladder muestra IN, PT, ET, Q, CU, CV y PV, con reinicio separado del arranque.
