@@ -96,3 +96,6 @@ document.querySelectorAll('[data-supply]').forEach(button=>button.onclick=()=>{s
 $('#expandWorld').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await world.requestFullscreen()}catch{$('#threeStatus').textContent='Usa la vista frontal y el zoom para acercarte al escenario.'}};
 
 $('#modulePicker').onchange=e=>setMode(topicGroups[e.target.value][0]);
+
+window.addEventListener("course-animation",event=>{if(!configs[event.detail])return;setMode(event.detail);world.scrollIntoView({block:"center",behavior:"auto"})});
+$("#backToCourse").onclick=()=>$("#courseLessonTitle").scrollIntoView({block:"start",behavior:"auto"});

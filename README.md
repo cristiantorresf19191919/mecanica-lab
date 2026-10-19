@@ -2,6 +2,10 @@
 
 Sitio educativo en español para aprender física desde cero con simulaciones 3D en Three.js.
 
+## Curso desde cero
+
+20 lecciones ordenadas en cinco módulos: fundamentos, principios eléctricos, electromecánica, neumática e hidráulica. Cada lección incluye objetivo, explicación, fórmula, ejemplo resuelto, ejercicio con retroalimentación y acceso a una animación 3D. El progreso se guarda localmente.
+
 ## Contenido
 
 - Mecánica: fuerzas, movimiento, energía, péndulos y engranajes.
