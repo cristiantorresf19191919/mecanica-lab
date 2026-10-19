@@ -12,3 +12,11 @@ Cada figura es un corte o banco didáctico idealizado, no un plano de fabricaci�
 - Electricidad: fuente regulable, resistencia, corriente y potencia. Base y patas, fuente con once ventilaciones, pantalla, placa, veinte pads, cuatro terminales, pistas, resistencia y cuatro bandas.
 
 Movimiento y lecturas comparten model.mjs. Controles nativos de rango, pausa y reinicio. La animación se detiene fuera de pantalla y no arranca con movimiento reducido. No introducir recursos que requieran Netlify ni servicios externos para estas figuras.
+
+## Regla de pertinencia por lección
+
+El usuario rechazó expresamente mostrar un circuito DC resistivo en una lección de motor trifásico. Cada lección debe identificar su concepto y cargar el experimento correspondiente. Se pueden compartir componentes gráficos, pero no sustituir el fenómeno por una ilustración genérica de su curso.
+
+Las ondas requieren ejes, unidades, lecturas y fases sincronizadas. Los motores deben distinguir campo y rotor. Neumática debe distinguir presión, caudal, fuerza y posición. Mecatrónica debe mostrar sensores, decisiones y actuaciones con sus condiciones. Los instrumentos isométricos de Anatomy complementan las gráficas técnicas; no las reemplazan.
+
+Las figuras nuevas tienen un modelo puro en concepts/models.mjs, controles y supuestos explícitos. La reproducción de AC y giro está ralentizada; los controles cambian condiciones del modelo. No presentar los diagramas de sección ni las trayectorias prescritas como CAD, cálculo electromagnético completo o dinámica de fluidos resuelta.
