@@ -1,9 +1,9 @@
 import {ladderRows,stages} from './ladder-model.mjs';
 const wire=(x1,x2,y,on)=>`<path class="wire ${on?'on':''}" d="M${x1} ${y}H${x2}"/>`;
-function contact(c,x,y){return `<g class="contact ${c.pass?'on':''}"><text x="${x}" y="${y-15}">${c.tag}</text><path d="M${x-6} ${y-9}v18m12-18v18${c.nc?`m-16 0l20-18`:''}"/><text class="bit" x="${x}" y="${y+23}">${c.pass?'TRUE':'FALSE'}</text></g>`;}
-function rung(r){let powered=true,prev=15;let body='<path class="rail on" d="M15 20v42"/><path class="rail" d="M405 20v42"/>';
+export function contact(c,x,y){return `<g class="contact ${c.pass?'on':''}"><text x="${x}" y="${y-15}">${c.tag}</text><path d="M${x-6} ${y-9}v18m12-18v18${c.nc?`m-16 0l20-18`:''}"/><text class="bit" x="${x}" y="${y+23}">${c.pass?'TRUE':'FALSE'}</text></g>`;}
+export function rung(r,names=stages){let powered=true,prev=15;let body='<path class="rail on" d="M15 20v42"/><path class="rail" d="M405 20v42"/>';
  r.contacts.forEach((c,i)=>{const x=[65,163,253][i];body+=wire(prev,x-6,38,powered)+contact(c,x,38);powered=powered&&c.pass;prev=x+6;});
- body+=wire(prev,310,38,powered)+`<g class="${r.active?'on':''}"><rect x="310" y="22" width="86" height="32" rx="3"/><text x="353" y="34">MOV etapa</text><text x="353" y="47">${stages[r.next]}</text></g>`+wire(396,405,38,r.active);
+ body+=wire(prev,310,38,powered)+`<g class="${r.active?'on':''}"><rect x="310" y="22" width="86" height="32" rx="3"/><text x="353" y="34">MOV etapa</text><text x="353" y="47">${names[r.next]}</text></g>`+wire(396,405,38,r.active);
  return `<svg viewBox="0 0 420 68" aria-hidden="true">${body}</svg>`;
 }
 export function createLadder({host,inspector,onPlay,onScan,onChange}){

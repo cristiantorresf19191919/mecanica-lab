@@ -1,0 +1,18 @@
+import * as T from 'three';
+import {pneumaticGeometry} from './pneumatic.mjs';
+export function dualGeometry(H){const {group,box,cyl,mesh,tube,updaters}=H;
+ const label=(parent,text,pos,width=.8)=>{const c=document.createElement('canvas');c.width=512;c.height=96;const ctx=c.getContext('2d');ctx.fillStyle='#e9eedb';ctx.fillRect(0,0,512,96);ctx.fillStyle='#263e31';ctx.textAlign='center';ctx.font='bold 48px monospace';ctx.fillText(text,256,65);const p=new T.Mesh(new T.PlaneGeometry(width,width*96/512),new T.MeshBasicMaterial({map:new T.CanvasTexture(c),side:T.DoubleSide}));p.position.set(...pos);parent.add(p);};
+ const lamps=[],signalLines=[];const wires=group('wiring');
+ for(const [index,prefix,z]of [[0,'A',2.3],[1,'B',-2.3]]){
+  const updates=[],branchGroup=(id,ex)=>{const outer=group(prefix+'_'+id,ex),inner=new T.Group();outer.add(inner);inner.position.z=z;if(index&&['compressor','regulator'].includes(id))outer.visible=false;return inner;};
+  pneumaticGeometry({...H,group:branchGroup,updaters:updates});updaters.push((m,e,u)=>updates.forEach(f=>f(index?m.B:m,e,u)));
+  const sensors=branchGroup('sensors',[0,1.4,-.8]);for(const [j,x]of [.65,3.35].entries()){box(.18,.2,.3,'dark',sensors,[x,2.63,-.5]);box(.24,.035,.52,'steel',sensors,[x,2.53,-.5]);cyl(.04,.04,'light',sensors,[x,2.76,-.51]);lamps.push(mesh(new T.SphereGeometry(.04,12,10),0x4f6748,sensors,[x,2.73,-.32]));label(sensors,prefix.toLowerCase()+j,[x,2.92,-.3],.42);const terminal=-.5+(index*2+j)*.52;signalLines.push(tube([[x,2.66,z-.65],[x,3.15,z-1.3],[terminal,3.2,z-1.3],[terminal,3.3,4.1],[terminal,1.45,4.8]],.023,0x7c87b6,wires));}
+  const badge=branchGroup('badge');label(badge,'CILINDRO '+prefix,[2,1.55,.08],1.8);label(badge,'5/2 · Y'+prefix,[-1.05,.5,1.56],1.25);
+ }
+ // One regulated supply feeds the two independently switched 5/2 valves.
+ const manifold=group('manifold');tube([[-2.75,1.25,2.5],[-3,.7,2.5],[-3,.7,-2.1],[-2.75,1.25,-2.1]],.06,0x57a9af,manifold);
+ const plc=group('plc',[0,1.2,0]);box(4.6,.18,1,'steel',plc,[.55,.4,4.8]);box(4.3,.1,.18,'light',plc,[.55,.54,4.8]);const lights=[];
+ for(const [j,tag]of ['RUN','I0.0','I0.1','I0.2','I0.3','Q0.0','Q0.1'].entries()){const x=-1.02+j*.52;box(.47,.9,.65,j===0?'dark':'steel',plc,[x,1.03,4.8]);for(let k=0;k<4;k++)box(.025,.18,.02,'dark',plc,[x-.15+k*.1,1.39,5.14]);for(let k=0;k<3;k++)cyl(.027,.035,'copper',plc,[x-.12+k*.12,.7,5.15],'z');label(plc,tag,[x,1.18,5.14],.44);lights.push(mesh(new T.SphereGeometry(.045,12,12),0x50644b,plc,[x,.98,5.16]));}
+ for(const [j,z]of [2.3,-2.3].entries())signalLines.push(tube([[-1.02+(5+j)*.52,.7,5.15],[-1.02+(5+j)*.52,.55,5.5],[-2.6-j*.25,.55,5.5],[-2.6-j*.25,.55,z+.9],[-2.34,.95,z+.9]],.027,0xcb985b,wires));
+ updaters.push((m,e)=>{const values=[m.i0,m.i1,m.i2,m.i3,m.q,m.qB];lamps.forEach((o,i)=>{o.material.color.setHex(values[i]?0xc5ed72:0x41523b);o.material.emissive.setHex(values[i]?0x5f862d:0)});lights.forEach((o,i)=>{const v=i===0||values[i-1];o.material.color.setHex(v?(i>4?0xeac17d:0xb5df73):0x44593e);o.material.emissive.setHex(v?0x526f2b:0)});signalLines.forEach((o,i)=>o.material.color.setHex(values[i]?(i<4?0xb4c2ff:0xf3c273):0x59695e));wires.visible=manifold.visible=e<.02;});
+}
