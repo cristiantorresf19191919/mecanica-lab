@@ -20,3 +20,13 @@ for(const duration of [1,2,5])for(const dwell of [0,.6,3]){const s=createPLC();f
 const fault=createPLC();for(let i=0;i<600;i++)stepPLC(fault,2,.6,true);assert.equal(fault.state,'FAULT');assert.equal(fault.q,false);assert.equal(fault.x,0);assert.equal(fault.i1,false);assert.ok(resetPLCFault(fault));for(let i=0;i<400;i++)stepPLC(fault,2,.6,false);assert.ok(fault.cycles>0);assert.equal(fault.fault,false);
 const mid=createPLC();mid.x=.5;mid.i0=false;assert.equal(resetPLCFault(mid),false);
 console.log('PASS: PLC scan sequencing, sensor-dependent transitions, 9 timing combinations, missing-sensor timeout, output drop, physical return and guarded rearm.');
+
+// Ladder networks are the executed program, including normally-closed fault checks.
+const {ladderRows,ladderOutput}=await import('../dist/machines/ladder-model.mjs');
+for(const state of ['HOME','WAIT_HOME','EXTEND','WAIT_END','RETRACT','FAULT'])for(const i0 of [false,true])for(const i1 of [false,true])for(const age of [0,.6,4]){
+ const before={state,i0,i1,age};const rows=ladderRows(before,2,.6);assert.ok(rows.filter(r=>r.active).length<=1,'exclusive state transition');assert.equal(ladderOutput(before),state==='EXTEND'||state==='WAIT_END');
+ if(state==='EXTEND'&&i1)assert.equal(rows.find(r=>r.active)?.id,'03','sensor wins over timeout');
+ if(state==='EXTEND'&&!i1&&age>3)assert.equal(rows.find(r=>r.active)?.id,'06','NC sensor and timeout enter fault');
+}
+const ladderCycle=createPLC();for(let i=0;i<400;i++){stepPLC(ladderCycle,1,.1);const active=ladderCycle.scan.rows.find(r=>r.active);assert.equal(ladderCycle.state,active?.next||ladderCycle.scan.state,'displayed scan is committed');assert.equal(ladderCycle.q,ladderOutput(ladderCycle),'displayed coil equals plant command');}
+console.log('PASS: ladder exclusivity, sensor priority, NC timeout contacts, scan snapshot and output coherence.');
