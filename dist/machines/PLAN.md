@@ -22,3 +22,6 @@ Pedestal con pulsador verde de marcha, rojo de paro, selector de modo y lámpara
 
 ## Esperas y lote
 Cuatro TON vinculados a los sensores de los extremos, manteniendo las mismas etapas y órdenes de válvula durante cada espera. El bloque CTU C1 cuenta la finalización de A− más T4, termina el lote al quinto pulso y deja ambos actuadores retraídos. El ladder muestra IN, PT, ET, Q, CU, CV y PV, con reinicio separado del arranque.
+
+## Pantalla HMI
+Pedestal lateral con pantalla frontal, marco y cable al PLC. La interfaz muestra posiciones simuladas A/B, cuatro entradas, salidas, modo, RUN, CV/PV y alarmas. Ajustes de T1–T4 y objetivo de lote, aplicados de forma conjunta y sin arrancar. Alarmas de timeout por sensor con reconocimiento separado del rearme y registro conservado.

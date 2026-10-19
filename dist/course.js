@@ -69,6 +69,6 @@ cq('#courseAnswers').onclick=e=>{const b=e.target.closest('[data-course-answer]'
 cq('#courseNext').onclick=()=>{if(lessonIndex<courseTracks[trackIndex].lessons.length-1)lessonIndex++;else if(trackIndex<courseTracks.length-1){trackIndex++;lessonIndex=0}else{cq('#courseFinal').hidden=false;cq('#courseFinal').textContent=courseDone.size===courseTotal?'¡Terminaste la ruta! Vuelve a los laboratorios y practica con otras condiciones.':`Llevas ${courseDone.size}/${courseTotal} lecciones. Puedes volver a las pendientes desde cada curso.`;return}courseRender();cq('#courseLessonTitle').scrollIntoView({block:'start',behavior:'auto'})};
 cq('#courseAnimation').textContent='Ampliar este laboratorio ↗';
 cq('#courseAnimation').onclick=()=>cq('#courseFigure').requestFullscreen?.().catch(()=>{});
-window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===cq('#courseFigure').contentWindow&&e.data?.type==='concept-height'){const h=Number(e.data.height);if(Number.isFinite(h))cq('#courseFigure').style.height=Math.max(550,Math.min(6000,h))+'px'}});
+window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===cq('#courseFigure').contentWindow&&e.data?.type==='concept-height'){const h=Number(e.data.height);if(Number.isFinite(h))cq('#courseFigure').style.height=Math.max(550,Math.min(12000,h))+'px'}});
 const requested=new URLSearchParams(location.search).get('concept');if(requested){courseTracks.forEach((tr,i)=>{const j=tr.lessons.findIndex(l=>l.concept===requested);if(j>=0){trackIndex=i;lessonIndex=j}})}
 courseRender();

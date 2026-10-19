@@ -1,6 +1,7 @@
+import {hmiGeometry} from './hmi-geometry.mjs';
 import * as T from 'three';
 import {pneumaticGeometry} from './pneumatic.mjs';
-export function dualGeometry(H){const {group,box,cyl,mesh,tube,updaters}=H;
+export function dualGeometry(H){const {group,box,cyl,mesh,tube,updaters}=H;hmiGeometry(H);
  const label=(parent,text,pos,width=.8)=>{const c=document.createElement('canvas');c.width=512;c.height=96;const ctx=c.getContext('2d');ctx.fillStyle='#e9eedb';ctx.fillRect(0,0,512,96);ctx.fillStyle='#263e31';ctx.textAlign='center';ctx.font='bold 48px monospace';ctx.fillText(text,256,65);const p=new T.Mesh(new T.PlaneGeometry(width,width*96/512),new T.MeshBasicMaterial({map:new T.CanvasTexture(c),side:T.DoubleSide}));p.position.set(...pos);parent.add(p);};
  const lamps=[],signalLines=[];const wires=group('wiring');
  for(const [index,prefix,z]of [[0,'A',2.3],[1,'B',-2.3]]){

@@ -9,3 +9,6 @@ content.dual.parts.splice(4,0,['A_piston','Pistón A','Se mantiene al final dura
 content.dual.parts.unshift(['operator','Pupitre: marcha, paro y modo','Marcha habilita RUN. Paro o cambio de modo quita ambas salidas y hace retornar los cilindros. El selector separa automático de órdenes manuales.','Los botones operativos están encima del ladder. Marcha automática requiere a0 y b0; manual permite ordenar A y B por separado.']);
 
 content.dual.intro='A+ → B+ → B− → A− con espera TON en cada extremo. El PLC cuenta cinco ciclos completos y termina el lote en origen. Ajusta las esperas con RUN=0 y pulsa Marcha.';
+
+content.dual.parts.unshift(['hmi','Pantalla HMI','Supervisa posiciones simuladas, entradas, contador y alarmas del PLC. Los ajustes operativos se editan en la HMI sobre el circuito.','La HMI escribe consignas; el PLC ejecuta la secuencia y actualiza el ladder.']);
+content.dual.intro='HMI conectada al PLC: ajusta T1–T4 y el objetivo del lote, observa posiciones y diagnostica sensores. El ladder y las piezas 3D comparten el mismo estado.';
