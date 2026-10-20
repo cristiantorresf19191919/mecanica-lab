@@ -1,3 +1,4 @@
+import {injectDiagnostic} from './diagnostic.mjs';
 import {sensorAlarm} from './hmi-model.mjs';
 import {SCAN,plcFrame} from './plc-model.mjs';
 export const dualStages={HOME:'Origen',AP:'A+',BP:'B+',BM:'B−',AM:'A−',FAULT:'Fallo',DONE:'Fin lote'};
@@ -27,7 +28,7 @@ function operatorScan(s,log){const cmd=s.pending;s.pending=null;const previous=s
 }
 
 export function updateTimers(s){for(const [stage,bit]of [['AP','i1'],['BP','i3'],['BM','i2'],['AM','i0']]){const prev=s.timers[stage]||{et:0},input=s.run&&s.mode==='auto'&&!s.fault&&s.state===stage&&s[bit],pt=s.delays[stage];const et=input?(prev.input?Math.min(pt,prev.et+SCAN):0):0;s.timers[stage]={input,pt,et,q:input&&et+1e-9>=pt};}}
-export function stepDual(s,ta=2,tb=2,broken=false){s.time+=SCAN;s.age+=SCAN;const old=s.state;const log=message=>{s.events.unshift({t:s.time,message});s.events.length=Math.min(16,s.events.length)};
+export function stepDual(s,ta=2,tb=2,broken=false){injectDiagnostic(s);s.time+=SCAN;s.age+=SCAN;const old=s.state;const log=message=>{s.events.unshift({t:s.time,message});s.events.length=Math.min(16,s.events.length)};
  s.pressure=s.lowPressure?0:4;s.pressureOK=s.pressure>=3;
  if(!s.jamA&&s.pressureOK)s.x=Math.max(0,Math.min(1,s.x+(s.q?1:-1)*SCAN/ta));if(!s.jamB&&s.pressureOK)s.y=Math.max(0,Math.min(1,s.y+(s.qB?1:-1)*SCAN/tb));
  for(const [key,v,tag]of [['i0',s.x<=1e-9&&!s.disabledSensors.i0,'a0 / I0.0'],['i1',s.x>=1-1e-9&&!s.disabledSensors.i1,'a1 / I0.1'],['i2',s.y<=1e-9&&!s.disabledSensors.i2,'b0 / I0.2'],['i3',s.y>=1-1e-9&&!broken&&!s.disabledSensors.i3,'b1 / I0.3']]){if(s[key]!==v)log(tag+' = '+Number(v));s[key]=v;}
