@@ -1,4 +1,4 @@
-export const traceKeys=['i0','i1','i2','i3','q','qB'];
+export const traceKeys=['i0','i1','i2','i3','q','qB','pressureOK','fault'];
 export function createTrace(capacity=3001){return {capacity,data:new Array(capacity),head:0,size:0,version:0};}
 export function clearTrace(t){t.head=0;t.size=0;t.version++;}
 export function recordTrace(t,s){const last=t.size?t.data[(t.head+t.size-1)%t.capacity]:null;if(last&&s.time<last.time)clearTrace(t);const point={time:s.time,A:s.x*100,B:s.y*100,state:s.state,cycle:s.cycles};for(const k of traceKeys)point[k]=Number(s[k]);if(t.size&&t.data[(t.head+t.size-1)%t.capacity].time===s.time){t.data[(t.head+t.size-1)%t.capacity]=point;}else if(t.size<t.capacity){t.data[(t.head+t.size++)%t.capacity]=point;}else{t.data[t.head]=point;t.head=(t.head+1)%t.capacity;}t.version++;return point;}
