@@ -84,3 +84,18 @@ const stats=summarizeHistory(readHistory(storage),'expert');assert.equal(stats.t
 for(let i=0;i<105;i++)saveDiagnostic({runId:'bounded-'+i,level:'basic',solved:true,attempts:1,hints:0},storage);
 assert.equal(readHistory(storage).length,100);
 console.log('PASS: difficulty pools and thresholds, score penalties/floor, single-save persistence, level-specific summaries and 100-entry history bound.');
+const {combinedCases,repairDiagnostic,continueDiagnostic}=await import('../dist/machines/diagnostic.mjs');
+for(let i=0;i<combinedCases.length;i++){
+ const s=fastDual();startDiagnostic(s,()=> (i+.1)/4,'expert');commandDual(s,'start');
+ const scan=()=>{stepDual(s,1,1);continueDiagnostic(s);};
+ for(let n=0;n<500&&!s.fault;n++)scan();
+ assert.ok(s.fault);assert.equal(s.disabledSensors[s.diagnostic.ids[1]],true);
+ answerDiagnostic(s,s.diagnostic.ids[1]);assert.equal(s.diagnostic.confirmed.length,0,'masked cause cannot be guessed');
+ answerDiagnostic(s,s.diagnostic.ids[0]);assert.equal(s.diagnostic.confirmed.length,1);assert.equal(s.diagnostic.revealed,false);
+ assert.equal(repairDiagnostic(s),true);assert.equal(repairDiagnostic(s),false);
+ for(let n=0;n<800;n++){scan();if(!s.diagnostic.recovering&&s.fault)break;}
+ assert.ok(s.fault);assert.equal(s.pressureOK,true);assert.equal(s.disabledSensors[s.diagnostic.ids[1]],true);
+ const axis=s.diagnostic.ids[1]==='i1'?'x':'y';near(s[axis],1);
+ answerDiagnostic(s,s.diagnostic.ids[1]);assert.ok(s.diagnostic.solved);assert.equal(s.diagnostic.confirmed.length,2);assert.equal(scoreDiagnostic(s.diagnostic),80);
+}
+console.log('PASS: four simultaneous fault pairs, masked-cause rejection, single-cause repair, retained sensor failure, second alarm and complete two-cause scoring.');
