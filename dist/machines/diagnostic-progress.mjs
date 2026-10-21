@@ -1,4 +1,5 @@
 export const levels={
+ intermittent:{label:'Intermitentes',pool:['pressureWave','i1Pulse','i3Pulse'],hints:3,description:'Presión fluctuante o sensor a1/b1 intermitente. Hasta 3 pistas. En presión se registran 3 segundos adicionales tras la alarma.'},
  basic:{label:'Inicial',pool:['pressure','jamA','i1'],hints:3,description:'Tres causas en A, punto de fallo fijo y hasta 3 pistas.'},
  intermediate:{label:'Intermedio',pool:['pressure','jamA','jamB','i1','i3'],hints:2,description:'Cinco causas en A o B y hasta 2 pistas.'},
  expert:{label:'Avanzado',pool:['pressure','jamA','jamB','i1','i3'],hints:3,description:'Dos fallos simultáneos: presión o atasco junto a sensor desconectado. Dos etapas de diagnóstico, hasta 3 pistas y punto de fallo variable.'}
