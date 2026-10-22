@@ -86,3 +86,6 @@ Volver al actual no reanuda ni cambia PLC/contador; reanudar la simulación o ej
 
 ### Reproducción histórica sincronizada
 Reproducir historial recorre los scans guardados a 0,1×, 0,25×, 0,5× o 1×. Circuito 3D, pantalla HMI y ladder comparten la misma copia del scan, sin interpolar señales digitales. Pausar permite examinar cada cambio; al llegar al final se detiene. Volver al actual recupera el PLC pausado sin modificar su estado ni añadir muestras. Las alarmas, eventos y fallos físicos también se guardan en cada muestra.
+
+### Comparación normal / fallo
+`machines/comparison.html` muestra dos bancos Three.js con HMI y ladder completos, controlados por un único reloj. `comparison-model.mjs` genera experimentos nuevos con el modelo Dual existente: origen idéntico, 4 bar, carreras de 2 s, cuatro TON de 1 s y un ciclo. Selección de presión baja, atasco A o a1 intermitente; cursor de 20 ms, primera diferencia observable, alarma y velocidades 0,1×–1×. No reutiliza ni altera el historial personal: abre en otra pestaña desde tendencias. Los visores aceptan snapshots únicamente del padre del mismo origen, sin ejecutar el PLC durante replay. Las pruebas verifican igualdad antes de la divergencia, tiempo común, alarma/salidas, final de ciclo sano y pulsos intermitentes. En móvil los bancos se apilan; el reloj sigue siendo común.
