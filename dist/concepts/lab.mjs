@@ -135,6 +135,9 @@ if(['wave','three','power','rectify','rc','pwm','adc'].includes(cfg.type)){
 }
 let lastHeight=0;new ResizeObserver(()=>{const h=Math.ceil(document.body.getBoundingClientRect().height);if(h!==lastHeight){lastHeight=h;parent.postMessage({type:'concept-height',height:h},location.origin)}}).observe(document.body);
 const challenges={
+transformload:['Con 24 V RMS, Ns/Np=2 y carga de 48 Ω, ¿qué corriente primaria RMS se necesita? Responde en A.',2,.01,'Vs=48 V; Is=48/48=1 A; P=48 W e Ip=48/24=2 A.'],
+opamp:['Con entrada de 3 V pico, ¿qué ganancia máxima evita superar los rieles ideales de ±12 V?',4,.01,'G máxima = 12/3 = 4. Por encima aparece recorte.'],
+relief:['Bomba de 6 L/min derivando todo el caudal al tanque a 60 bar: ¿cuántos watts disipa el alivio?',600,1,'Q=0,0001 m³/s; p=6 000 000 Pa; P=pQ=600 W.'],
 resonance:['Con r = 1, ζ = 0,1 y deformación estática de 10 mm, ¿cuál es la amplitud en mm?',50,.1,'M = 1/(2ζ) = 5. La amplitud es 5 × 10 = 50 mm.'],
 standing:['Para L = 1 m, v = 20 m/s y modo n = 3, calcula la frecuencia en Hz.',30,.1,'f = nv/(2L) = 3 × 20 / 2 = 30 Hz.'],
 phasesequence:['En secuencia ABC, con 50 Hz y dos polos, calcula el módulo de la velocidad del campo en rpm.',3000,1,'ns = 120 × 50 / 2 = 3 000 rpm. ACB invierte el signo.'],

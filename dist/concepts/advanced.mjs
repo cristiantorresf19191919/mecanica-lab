@@ -1,4 +1,5 @@
-export function drawAdvanced(id,m,H){const {ctx,text,line,box,circle,arrow,grid,wave,bar,colors,green,white,muted,t}=H,TAU=Math.PI*2;
+import {drawEnergy} from './energy-labs.mjs';
+export function drawAdvanced(id,m,H){const energy=drawEnergy(id,m,H);if(energy)return energy;const {ctx,text,line,box,circle,arrow,grid,wave,bar,colors,green,white,muted,t}=H,TAU=Math.PI*2;
 if(id==='resonance'){
  const x=255+m.x*1300;box(65,185,25,195,'#405d55',muted);line([[65,385],[485,385]],muted,4);const coil=[[90,290]];for(let j=1;j<=24;j++)coil.push([90+(x-145)*j/24,290+(j%2?19:-19)]);coil.push([x-55,290]);line(coil,colors[1],3);box(x-55,245,110,85,'#547662',green);circle(x-32,350,18,'#182d34',white);circle(x+32,350,18,'#182d34',white);arrow(x,220,55*Math.sin(TAU*m.a*t),0,colors[2]);text('MASA + RESORTE + AMORTIGUAMIENTO',265,440,14,muted,'center');
  grid(550,100,390,290);const pts=[];for(let j=0;j<=200;j++){const r=.2+j/200*1.8,g=1/Math.hypot(1-r*r,2*m.b*r);pts.push([550+j/200*390,390-g/10*270])}line(pts,colors[0],3);circle(550+(m.a-.2)/1.8*390,390-m.gain/10*270,7,green,null);text('AMPLIFICACIÓN M',550,80,17,colors[0]);text('r = 0,2',550,425,15,muted);text('2,0',940,425,15,muted,'right');text('0',540,395,14,muted,'right');text('10',540,125,14,muted,'right');return ['Respuesta estacionaria','Resorte','Fuerza periódica'];

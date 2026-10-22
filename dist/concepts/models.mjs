@@ -2,6 +2,9 @@ export const TAU=2*Math.PI;
 export function calculate(id,type,a,b,t,on=true){
  const phase=TAU*a*t/100, result={phase,a,b,t,on};
  const metrics=(...x)=>{result.metrics=x;return result};
+ if(type==='transformload'){result.vs=24*a;result.is=result.vs/b;result.ip=result.is*a;result.power=result.vs*result.is;result.angle=TAU*.5*t;return metrics(['Secundario RMS',result.vs,'V'],['Primario RMS',result.ip,'A'],['Potencia ideal',result.power,'W'])}
+ if(type==='opamp'){result.angle=TAU*.5*t;result.input=b*Math.sin(result.angle);result.output=Math.max(-12,Math.min(12,a*result.input));result.clipped=a*b>12;return metrics(['Ganancia',a,'V/V'],['Salida pico',Math.min(12,a*b),'V'],['Rf (Rg=10 kΩ)',(a-1)*10,'kΩ'])}
+ if(type==='relief'){result.required=a*10;result.blocked=result.required>=b;result.p=Math.min(result.required,b);result.speed=result.blocked?0:.1;result.heat=result.blocked?b*10:0;result.x=result.blocked?0:(t*.1)%.5;return metrics(['Presión',result.p,'bar'],['Velocidad',result.speed,'m/s'],['Calor en alivio',result.heat,'W'])}
  if(type==='resonance'){result.gain=1/Math.hypot(1-a*a,2*b*a);result.lag=Math.atan2(2*b*a,1-a*a);result.x=.01*result.gain*Math.sin(TAU*a*t-result.lag);return metrics(['Amplitud',10*result.gain,'mm'],['Desfase',result.lag*180/Math.PI,'°'],['Excitación',a,'Hz'])}
  if(type==='standing'){result.f=a*b/2;result.phase=TAU*result.f*t/20;return metrics(['Frecuencia',result.f,'Hz'],['Longitud de onda',2/a,'m'],['Nodos interiores',a-1,''])}
  if(type==='sequencefield'){result.direction=on?1:-1;result.angle=result.direction*TAU*a*t/100;return metrics(['Campo, 2 polos',result.direction*60*a,'rpm'],['Frecuencia',a,'Hz'],['Amplitud de campo',1.5*b,'pu'])}
