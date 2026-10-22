@@ -109,3 +109,15 @@ for(let i=0;i<3;i++){
  answerDiagnostic(s,'pressure');assert.equal(s.diagnostic.solved,false);answerDiagnostic(s,s.diagnostic.id);assert.equal(s.diagnostic.solved,true);assert.equal(scoreDiagnostic(s.diagnostic),80);
 }
 console.log('PASS: fluctuating pressure crosses threshold repeatedly while fault remains latched; a1/b1 pulse at stationary endpoints, timeout, observation window and scoring.');
+const {selectTrace,moveTrace,tracePoints,traceKeys}=await import('../dist/machines/trends-model.mjs');
+const cursorPLC=createDual(),cursorTrace=createTrace(500);commandDual(cursorPLC,'start');
+for(let n=0;n<200;n++){stepDual(cursorPLC,1,1);recordTrace(cursorTrace,cursorPLC);}
+const frozen=selectTrace(cursorTrace,.8),frozenRows=JSON.stringify(frozen.snapshot.scan);
+for(let n=0;n<20;n++)stepDual(cursorPLC,1,1);
+assert.equal(JSON.stringify(frozen.snapshot.scan),frozenRows);
+near(frozen.time,.8);near(moveTrace(cursorTrace,1).time,.82);near(moveTrace(cursorTrace,-1).time,.8);
+const event=moveTrace(cursorTrace,1,true),all=tracePoints(cursorTrace),eventIndex=all.indexOf(event);
+assert.ok(traceKeys.some(k=>event[k]!==all[eventIndex-1][k]));
+assert.equal(selectTrace(cursorTrace,-999),all[0]);assert.equal(selectTrace(cursorTrace,999),all.at(-1));
+clearTrace(cursorTrace);assert.equal(cursorTrace.selected,null);
+console.log('PASS: immutable scan snapshots, nearest-time selection, adjacent sample/event stepping, history boundaries and cursor reset.');

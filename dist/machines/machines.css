@@ -27,3 +27,5 @@ body.preview{padding:0}.preview>header,.preview>.machine-nav,.preview .inspector
 .hmi-diagnostic{padding:22px;border:1px solid #9aa98b;background:#f4f2df;margin-bottom:22px}.hmi-diagnostic h3{font-size:1.4rem;margin:12px 0}.hmi-diagnostic select{max-width:100%;padding:8px}.hmi-diagnostic button{margin:4px 0}
 
 .diag-history-scroll{overflow:auto;max-height:320px}.diag-history-scroll table{width:100%;border-collapse:collapse;font-size:13px}.diag-history-scroll th,.diag-history-scroll td{padding:10px;text-align:left;border-bottom:1px solid #bdc9ae;white-space:nowrap}
+
+.trend-inspection{margin-top:14px;padding:16px;border:1px solid #96ad91;background:#edf2e5}.trend-inspection label{display:block;margin:12px 0}.trend-inspection input{display:block;width:100%}.trend-inspection strong{color:#176f9a}#trendChart{cursor:crosshair}
