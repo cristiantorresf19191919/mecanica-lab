@@ -121,3 +121,9 @@ assert.ok(traceKeys.some(k=>event[k]!==all[eventIndex-1][k]));
 assert.equal(selectTrace(cursorTrace,-999),all[0]);assert.equal(selectTrace(cursorTrace,999),all.at(-1));
 clearTrace(cursorTrace);assert.equal(cursorTrace.selected,null);
 console.log('PASS: immutable scan snapshots, nearest-time selection, adjacent sample/event stepping, history boundaries and cursor reset.');
+const {startReplay,advanceReplay}=await import('../dist/machines/trends-model.mjs');
+const replayTrace=createTrace(),replayPlant=createDual();commandDual(replayPlant,'start');
+for(let i=0;i<100;i++){stepDual(replayPlant,1,1);recordTrace(replayTrace,replayPlant);}
+const plantBefore=JSON.stringify(replayPlant);startReplay(replayTrace);const initialTime=replayTrace.selected.time;replayTrace.replaySpeed=.25;advanceReplay(replayTrace,.4);near(replayTrace.selected.time,initialTime+.1);assert.equal(JSON.stringify(replayPlant),plantBefore);
+advanceReplay(replayTrace,100);assert.equal(replayTrace.replaying,false);assert.equal(replayTrace.selected,tracePoints(replayTrace).at(-1));startReplay(replayTrace);assert.equal(replayTrace.selected,tracePoints(replayTrace)[0]);clearTrace(replayTrace);assert.equal(replayTrace.replaying,false);
+console.log('PASS: slow history playback follows recorded timestamps, preserves live plant, stops at end, restarts and clears correctly.');

@@ -29,3 +29,5 @@ body.preview{padding:0}.preview>header,.preview>.machine-nav,.preview .inspector
 .diag-history-scroll{overflow:auto;max-height:320px}.diag-history-scroll table{width:100%;border-collapse:collapse;font-size:13px}.diag-history-scroll th,.diag-history-scroll td{padding:10px;text-align:left;border-bottom:1px solid #bdc9ae;white-space:nowrap}
 
 .trend-inspection{margin-top:14px;padding:16px;border:1px solid #96ad91;background:#edf2e5}.trend-inspection label{display:block;margin:12px 0}.trend-inspection input{display:block;width:100%}.trend-inspection strong{color:#176f9a}#trendChart{cursor:crosshair}
+
+#historyScene{position:absolute;left:18px;bottom:62px;padding:8px 12px;background:#eef5e7e8;color:#176f9a;border:1px solid #91a98b;border-radius:5px;font:12px monospace;pointer-events:none;z-index:2}
