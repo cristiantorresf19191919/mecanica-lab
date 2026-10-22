@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {createProgressStore,signalStats,progressKey} from '../dist/machines/prediction-progress.mjs';
+const memory=new Map(),storage={getItem:k=>memory.get(k),setItem:(k,v)=>memory.set(k,v)},store=createProgressStore(storage);
+const r={id:'one',kind:'sensor',signal:'i1',label:'Sensor a1',date:new Date().toISOString(),errors:1,hints:1,points:0,resolved:false,revealed:false,wrong:['Sensor b0']};
+store.save(r);store.save({...r,errors:2,points:50,resolved:true});assert.equal(store.rows().length,1);const reloaded=createProgressStore(storage);assert.equal(reloaded.rows()[0].points,50);assert.equal(signalStats(reloaded.rows())[0].errors,2);
+store.save({...r,id:'pending',errors:3});const stats=signalStats(store.rows())[0];assert.equal(stats.questions,2);assert.equal(stats.resolved,1);assert.equal(stats.mean,50);assert.equal(stats.errors,5);
+const denied=createProgressStore({getItem:()=>null,setItem(){throw Error('blocked');}});denied.save(r);assert.equal(denied.rows().length,1);assert(denied.warning());
+const corrupt=createProgressStore({getItem:()=>'{bad'});assert(corrupt.warning());corrupt.save(r);assert.equal(corrupt.rows().length,1);
+for(let i=0;i<505;i++)store.save({...r,id:'bounded'+i});assert.equal(store.rows().length,500);assert.equal(JSON.parse(memory.get(progressKey)).length,500);
+console.log('PASS persistence, upsert, pending exclusion from score, error attribution, bounded history, denied storage and malformed data.');
