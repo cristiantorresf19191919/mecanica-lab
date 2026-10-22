@@ -1,4 +1,4 @@
-const signals=[
+export const signals=[
  ...['i0','i1','i2','i3'].map((k,i)=>({id:k,label:['Sensor a0','Sensor a1','Sensor b0','Sensor b1'][i],type:'sensor',read:s=>!!s[k]})),
  {id:'ps',label:'Presostato PS',type:'sensor',read:s=>!!s.pressureOK},
  {id:'q',label:'Salida YA / Q0.0',type:'salida',read:s=>!!s.q},

@@ -1,0 +1,4 @@
+import assert from 'node:assert/strict';
+import {makeExam,examRecords} from '../dist/machines/weekly-exam.mjs';
+import {createCalendarStore,dailyProgress} from '../dist/machines/practice-calendar.mjs';
+const e=makeExam(()=>.3);assert.equal(e.questions.length,6);assert(e.questions.every(q=>q.bank==='fault'));for(const k of ['pressure','jam','sensor'])assert.equal(e.questions.filter(q=>q.kind===k).length,2);e.answers=e.questions.map((q,i)=>i?q.options.find(o=>o.id!==q.answer.id).id:q.answer.id);e.finishedAt=new Date().toISOString();const rows=examRecords(e);assert.equal(rows.filter(r=>r.correct).length,1);assert(rows.slice(1).every(r=>r.errors===1&&r.points===0));assert.equal(new Set(rows.map(r=>r.id)).size,6);const s=createCalendarStore({getItem:()=>null,setItem(){}});s.sync(rows);assert.equal(dailyProgress(s.state()).count,1);console.log('PASS surprise coverage, scoring, stable record IDs and wrong answers excluded from daily goal.');

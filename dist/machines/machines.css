@@ -50,3 +50,5 @@ body.comparison-embed{padding:0;margin:0;max-width:none}
 .comparison-embed .timer-panel label{display:none}
 
 .comparison-embed .comparison-difference{outline:2px solid #b86c0d;outline-offset:-2px;background:#fff0ce!important}.comparison-embed svg .comparison-difference{outline:none;background:none!important}.comparison-embed svg .comparison-difference path{stroke:#b86c0d!important;stroke-width:3.5}.comparison-embed svg .comparison-difference text{fill:#965407!important;text-decoration:underline;font-weight:bold}
+
+.exam-view #hmiAlarms>.hmi-warning{display:none}
