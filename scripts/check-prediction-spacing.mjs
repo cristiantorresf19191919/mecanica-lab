@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {spacedRecommendations} from '../dist/machines/prediction-spacing.mjs';
+const now=new Date(2026,9,22,12),r=(date,extra={})=>({signal:'i1',label:'a1',resolved:true,date:new Date(2026,9,date,12).toISOString(),points:100,errors:0,hints:0,revealed:false,...extra});
+let s=spacedRecommendations([r(20),r(21)],now)[0];assert.equal(s.interval,3);assert.equal(s.isDue,false);
+s=spacedRecommendations([r(20),r(20),r(20)],now)[0];assert.equal(s.interval,1);assert.equal(s.isDue,true);
+s=spacedRecommendations([r(19),r(20),r(21,{errors:1,points:80})],now)[0];assert.equal(s.interval,1);assert(s.isDue);
+s=spacedRecommendations([r(19),r(20),r(21),r(22,{resolved:false,errors:1})],now)[0];assert(s.isDue);
+assert.equal(spacedRecommendations([r(22,{resolved:false})],now)[0].isDue,true);
+assert.equal(spacedRecommendations([r(22,{date:'bad'})],now)[0].last,null);
+s=spacedRecommendations([r(1),r(2),r(3),r(4),r(5),r(6)],now)[0];assert.equal(s.interval,30);
+assert.equal(spacedRecommendations([],now).length,0);
+console.log('PASS due dates, same-day deduplication, failure reset, pending needs, invalid dates and maximum interval.');
