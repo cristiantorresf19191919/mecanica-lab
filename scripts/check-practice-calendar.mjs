@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {createCalendarStore,dailyProgress,dateKey} from '../dist/machines/practice-calendar.mjs';
+const now=new Date(2026,9,22,12),mem=new Map(),storage={getItem:k=>mem.get(k),setItem:(k,v)=>mem.set(k,v)},store=createCalendarStore(storage);
+const row=(d,i,revealed=false)=>({id:d+'-'+i,resolved:true,revealed,date:new Date(2026,9,d,10).toISOString()});
+const rows=[...Array.from({length:3},(_,i)=>row(20,i)),...Array.from({length:3},(_,i)=>row(21,i)),row(22,1),row(22,2,true)];store.sync(rows,now);store.sync(rows,now);let p=dailyProgress(store.state(),now);assert.equal(p.count,1);assert.equal(p.streak,2);assert.equal(p.best,2);assert.equal(p.remaining,2);
+store.setGoal(1,now);p=dailyProgress(store.state(),now);assert.equal(p.streak,3);assert.equal(store.state().days['2026-10-21'].target,3);assert.equal(createCalendarStore(storage).state().goal,1);assert(!store.setGoal(0));assert(!store.setGoal(21));
+assert.equal(dailyProgress(store.state(),new Date(2026,9,24)).streak,0);
+assert.equal(dateKey(new Date(2026,0,1)),'2026-01-01');
+const denied=createCalendarStore({getItem:()=>null,setItem(){throw Error();}});denied.sync(rows,now);assert(denied.warning());assert.equal(dailyProgress(denied.state(),now).count,1);
+console.log('PASS goal validation/persistence, duplicate prevention, reveal exclusion, streak grace, broken streak, historical targets and storage fallback.');
