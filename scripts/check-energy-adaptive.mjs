@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {energyReviewPlan,nextEnergyReview} from '../dist/concepts/energy-adaptive.mjs';
+const now=Date.parse('2026-10-23T12:00:00Z');
+const record=(fault,score=100,level='basic',date='2026-10-23T10:00:00Z',events=[])=>({lab:'relief',faults:[fault],score,level,date,events});
+assert.equal(energyReviewPlan([],now).length,6);assert.equal(nextEnergyReview([],'relief',null,now).level,'basic');
+let rows=[record('pump'),record('pump')];assert.equal(nextEnergyReview(rows,'relief','pump',now).level,'intermittent');
+rows=['pump','spring'].flatMap(f=>[record(f),record(f),record(f,100,'intermittent')]);assert.equal(nextEnergyReview(rows,'relief','pump',now).level,'combined');
+rows.push(record('pump',40,'combined', '2026-10-23T11:00:00Z',[{wrong:true,targets:['pump']},{wrong:true,targets:['pump']}]));assert.equal(nextEnergyReview(rows,'relief','pump',now).level,'basic');assert.equal(nextEnergyReview(rows,'relief',null,now).fault,'pump');
+const old=energyReviewPlan([record('pump',100,'basic','2026-09-01T00:00:00Z')],now).find(x=>x.fault==='pump');assert(old.days>30);assert(old.reason.includes('días'));
+assert.equal(nextEnergyReview(rows,'opamp','pump',now).lab,'opamp');
+console.log('PASS cold start, per-cause promotion, combined prerequisites, downgrade, error priority, staleness and validated review target.');

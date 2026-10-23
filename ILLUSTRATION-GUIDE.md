@@ -137,3 +137,6 @@ Se conserva geometría Anatomy y se inyecta el fallo solo en el modelo del banco
 
 ### Combinaciones e intermitencias con progreso
 Las escenas existentes reciben un único estado derivado de las causas activas; no se crean animaciones independientes de las mediciones. En combinado se aplican ambos modificadores antes de calcular salida y caudal. En intermitente la causa reaparece en ventanas temporales comunes al reloj del banco normal y al averiado. La verificación exige reparación de todas las causas, incluso en ventanas normales. Historial local de retos completos, estadísticas por causa y pistas asociadas. Se conserva cámara, despiece y controles temporales. Validación de estados residual y reparado, notas y persistencia tras recarga.
+
+### Plan adaptativo de los bancos de energía
+El plan cambia selección de causa y nivel, manteniendo los mismos modelos y reloj compartido de A/B. Repasos focalizados anuncian la causa objetivo; el diagnóstico libre conserva la selección sorpresa. La reparación y verificación siguen exigiendo resolver cada causa. El plan se actualiza al guardar un resultado y abre el laboratorio apropiado desde un enlace validado. Validado en navegador: recomendación combinada, reparación, sincronía de snapshots y actualización del plan sin duplicar resultados.
