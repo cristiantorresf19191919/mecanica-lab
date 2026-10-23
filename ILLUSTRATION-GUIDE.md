@@ -158,3 +158,6 @@ La selección adaptativa modifica las causas y el nivel, sin alterar geometrías
 
 ### Reparación parcial en bancos de energía
 El protocolo de examen acepta una lista validada de causas reparadas. El banco B aplica únicamente las causas restantes usando el modelo físico existente; A conserva su referencia normal. Las geometrías Anatomy no cambian. Las lecturas y las piezas reciben el mismo tiempo, también en fallos intermitentes. El taller reutiliza pistas y comprobación de diagnóstico y muestra una bitácora de acciones con puntuación independiente.
+
+### Retos desde el historial de reparaciones
+Los accesos del historial cargan un estado de taller independiente del examen visible. El banco normal permanece de referencia y el averiado recibe las causas y reparaciones de ese estado; ambos mantienen el mismo reloj. La personalización modifica causa y nivel sin introducir geometrías ni modelos visuales diferentes.
