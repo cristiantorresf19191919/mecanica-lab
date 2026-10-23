@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {createEnergySpacing,shiftDay} from '../dist/concepts/energy-spacing.mjs';
+let data=null;const storage={getItem:()=>data,setItem:(k,v)=>{data=v;}};const s=createEnergySpacing(storage);
+const row=(id,date,clean=true)=>({id,date:date+'T12:00:00',lab:'relief',faults:['pump'],score:clean?100:75,events:clean?[]:[{action:'hint',targets:['pump']}]});
+s.sync([row('1','2026-10-01')]);assert.equal(s.schedule('2026-10-01').find(x=>x.fault==='pump').due,'2026-10-02');s.sync([row('1','2026-10-01'),row('2','2026-10-01')]);assert.equal(s.snapshot().days['2026-10-01'].count,2);assert.equal(s.snapshot().faults['relief:pump'].stage,0);
+s.sync([row('3','2026-10-02'),row('4','2026-10-02')]);assert.equal(s.snapshot().faults['relief:pump'].stage,1);assert.equal(s.streak('2026-10-03').current,2);
+s.setGoal(3,'2026-10-03');assert.equal(s.snapshot().days['2026-10-02'].goal,2);s.sync([row('5','2026-10-03',false)]);assert.equal(s.snapshot().faults['relief:pump'].due,'2026-10-04');assert.equal(s.streak('2026-10-05').current,0);
+assert.equal(createEnergySpacing(storage).snapshot().days['2026-10-01'].count,2);assert.equal(shiftDay('2026-12-31',1),'2027-01-01');assert.equal(shiftDay('2028-02-28',1),'2028-02-29');
+const bad=createEnergySpacing({getItem(){throw Error()},setItem(){throw Error()}});bad.sync([row('a','2026-10-01')]);assert(bad.warning());assert.equal(bad.snapshot().days['2026-10-01'].count,1);
+console.log('PASS spacing intervals, same-day dedupe, hint reset, goal history, streak gaps, reload, leap/year boundaries and storage fallback.');

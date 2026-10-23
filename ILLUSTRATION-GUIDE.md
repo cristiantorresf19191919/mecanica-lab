@@ -140,3 +140,6 @@ Las escenas existentes reciben un único estado derivado de las causas activas; 
 
 ### Plan adaptativo de los bancos de energía
 El plan cambia selección de causa y nivel, manteniendo los mismos modelos y reloj compartido de A/B. Repasos focalizados anuncian la causa objetivo; el diagnóstico libre conserva la selección sorpresa. La reparación y verificación siguen exigiendo resolver cada causa. El plan se actualiza al guardar un resultado y abre el laboratorio apropiado desde un enlace validado. Validado en navegador: recomendación combinada, reparación, sincronía de snapshots y actualización del plan sin duplicar resultados.
+
+### Calendario de práctica de energía
+Las fechas y el hábito no modifican los modelos 3D. Cada botón de repaso conserva causa objetivo y nivel adaptativo, usando los bancos normal/averiado sincronizados existentes. El calendario muestra deuda de práctica en hoy y vencimientos futuros; cumplir meta y resolver todas las causas vencidas son medidas independientes. Pruebas de recorrido completo desde reto adaptado a meta/racha guardadas y consulta mensual tras recarga.
