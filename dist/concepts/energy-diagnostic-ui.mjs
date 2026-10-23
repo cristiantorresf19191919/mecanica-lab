@@ -1,3 +1,4 @@
+import {renderEnergyWeekly} from './energy-weekly.mjs';
 import {createEnergySpacing} from './energy-spacing.mjs';
 import {renderEnergyCalendar} from './energy-calendar-ui.mjs';
 import {energyReviewPlan,nextEnergyReview} from './energy-adaptive.mjs';
@@ -10,7 +11,7 @@ export function mountEnergyDiagnostic(root,id,{start,changed,exit}){
  el('h2','Taller · avería sorpresa');el('p','Banco A: referencia normal. Banco B: misma consigna con una avería oculta. El diagrama inferior corresponde a A. Usa las lecturas y piezas de B para diagnosticar. Las reparaciones representan intervenciones realizadas con el equipo aislado.');
  if(!state){
  el('h3','Resultados guardados');el('p','Hasta 200 retos completos en este navegador. Los intentos sin terminar no se guardan. Los resultados anteriores a esta función no se pueden recuperar.');if(results.warning())el('p',results.warning());
- const rows=results.all();spacing.sync(rows);renderEnergyCalendar(panel,{store:spacing,rows,plan:energyReviewPlan(rows),lab:id,begin:beginReview});el('p',rows.length?rows.length+' retos · media '+Math.round(rows.reduce((n,r)=>n+r.score,0)/rows.length)+'/100':'Aún no hay resultados. Completa tu primer diagnóstico.');
+ const rows=results.all();spacing.sync(rows);renderEnergyWeekly(panel,{rows,store:spacing,lab:id,begin:beginReview});renderEnergyCalendar(panel,{store:spacing,rows,plan:energyReviewPlan(rows),lab:id,begin:beginReview});el('p',rows.length?rows.length+' retos · media '+Math.round(rows.reduce((n,r)=>n+r.score,0)/rows.length)+'/100':'Aún no hay resultados. Completa tu primer diagnóstico.');
  const requested=new URLSearchParams(location.search).get('review');const dates=spacing.schedule();const ordered=energyReviewPlan(rows).sort((a,b)=>dates.find(x=>x.lab===a.lab&&x.fault===a.fault).due.localeCompare(dates.find(x=>x.lab===b.lab&&x.fault===b.fault).due));const recommended=requested?nextEnergyReview(rows,id,requested):ordered.find(x=>x.lab===id);
  el('h3','Tu próximo reto · '+names[recommended.level]);el('p',recommended.reason);button('Comenzar reto adaptado',()=>beginReview(recommended),'adaptive');
  el('p','El nivel se calcula por avería con sus últimos tres resultados: dos con media ≥80 y pocas ayudas permiten intermitencias. Para combinar, ambas causas necesitan tres resultados con media ≥85, sin errores y con práctica intermitente o combinada. Si empeoras, vuelve el apoyo. Puedes elegir nivel manual más abajo.');

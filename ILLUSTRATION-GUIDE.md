@@ -143,3 +143,6 @@ El plan cambia selección de causa y nivel, manteniendo los mismos modelos y rel
 
 ### Calendario de práctica de energía
 Las fechas y el hábito no modifican los modelos 3D. Cada botón de repaso conserva causa objetivo y nivel adaptativo, usando los bancos normal/averiado sincronizados existentes. El calendario muestra deuda de práctica en hoy y vencimientos futuros; cumplir meta y resolver todas las causas vencidas son medidas independientes. Pruebas de recorrido completo desde reto adaptado a meta/racha guardadas y consulta mensual tras recarga.
+
+### Resumen semanal y planificación de energía
+El informe y las tarjetas semanales son vistas de los resultados y vencimientos existentes. Sus botones usan `beginReview` y conservan el modelo físico y el reloj común de los dos bancos 3D. Se verificó la apertura de una causa desde una fecha futura como práctica inmediata, su reparación y actualización del resumen. Los días sin vencimientos se muestran explícitamente; la programación futura es una previsión recalculable, no una promesa de avance.
