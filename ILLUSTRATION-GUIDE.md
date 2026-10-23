@@ -155,3 +155,6 @@ El archivo reutiliza los mismos bancos Anatomy y mensajes de comparación, sin g
 
 ### Revisión del examen adaptativo de energía
 La selección adaptativa modifica las causas y el nivel, sin alterar geometrías ni crear relojes adicionales. La revisión de cada caso reutiliza los dos bancos existentes mediante el protocolo de comparación de mismo origen. La explicación aparece después de las respuestas y contextualiza intermitencias, síntomas y estado reparado.
+
+### Reparación parcial en bancos de energía
+El protocolo de examen acepta una lista validada de causas reparadas. El banco B aplica únicamente las causas restantes usando el modelo físico existente; A conserva su referencia normal. Las geometrías Anatomy no cambian. Las lecturas y las piezas reciben el mismo tiempo, también en fallos intermitentes. El taller reutiliza pistas y comprobación de diagnóstico y muestra una bitácora de acciones con puntuación independiente.
