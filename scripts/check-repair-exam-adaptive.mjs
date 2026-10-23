@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {createRepairExam,repairExamAction,repairExamEvidence} from '../dist/concepts/repair-exam-model.mjs';
+const finish=(i,r,level='basic',bad=false)=>{const e=createRepairExam([],()=>r);e.id='exam'+i;e.cases.forEach(c=>c.level=level);for(let k=0;k<3;k++){if(bad)repairExamAction(e,k,'verify');for(const f of e.cases[k].faults)repairExamAction(e,k,'repair',f);repairExamAction(e,k,'verify');}e.finishedAt=new Date(2026,9,i+1).toISOString();return e;};
+const clean=[finish(0,0),finish(1,0)];assert(createRepairExam([],()=>0,clean).cases.every(c=>c.level==='intermittent'));assert(createRepairExam([],()=>0,[clean[0],clean[0]]).cases.every(c=>c.level==='basic'));
+const all=[...clean,finish(2,0,'intermittent'),finish(3,.99),finish(4,.99),finish(5,.99,'intermittent')];assert(createRepairExam([],()=>0,all).cases.every(c=>c.level==='combined'));
+all.push(finish(6,0,'intermittent',true));assert.equal(createRepairExam([],()=>0,all).cases[0].level,'basic');assert.equal(repairExamEvidence(all,'transformload')[0].errors,1);
+const old=finish(7,0);old.cases[0].events.push({wrong:true,action:'repair',choice:'load',targets:['ratio']});assert.equal(repairExamEvidence([old],'transformload')[1].errors,1);assert.equal(repairExamEvidence([old],'transformload')[0].errors,0);
+assert.equal(createRepairExam([],()=>.6,[finish(8,0,'basic',true)]).cases[0].fault,'ratio');
+assert.deepEqual(createRepairExam([{irrelevant:true}],()=>0,clean).cases.map(c=>c.level),['intermittent','intermittent','intermittent']);
+console.log('PASS cause-level evidence, weighted mistakes, duplicate exclusion, intermittent promotion, combined gate, downgrade and isolation from practice.');

@@ -173,3 +173,6 @@ El examen usa las mismas escenas Anatomy en modo de evaluación, con la ayuda de
 
 ### Archivo y reintento del examen de reparación
 La revisión archivada reutiliza las instantáneas antes/después de cada intervención en los bancos existentes. Un reintento crea un estado de reparación nuevo con idénticas causas y nivel. Las listas de causas reparadas se envían al banco B mientras A mantiene la referencia y el mismo reloj; las notas originales permanecen inmutables.
+
+### Revisión de reparación adaptativa
+El nivel seleccionado conserva los mismos modelos de averías estables, intermitentes y combinadas. Los controles anterior/siguiente recorren instantáneas de intervención y muestran qué paso está seleccionado. Ambos bancos conservan el reloj común; la revisión representa estados antes/después, no una grabación del tiempo real de las acciones del usuario.
