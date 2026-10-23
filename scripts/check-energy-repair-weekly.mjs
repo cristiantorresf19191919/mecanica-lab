@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {createRepairSpacing,repairSpacingRows} from '../dist/concepts/energy-repair-spacing.mjs';
+import {repairPriorities} from '../dist/concepts/energy-repair-history.mjs';
+import {energyWeekly} from '../dist/concepts/energy-weekly.mjs';
+const store=createRepairSpacing({getItem:()=>null,setItem(){}});store.setGoal(1,'2026-10-23');
+const r=(id,date,score,events=[])=>({id,date:date+'T12:00:00',lab:'opamp',level:'basic',faults:['gain'],score,events,errors:events.filter(x=>x.wrong).length,hints:0});
+const rows=[r('old','2026-10-18',50),r('new','2026-10-23',85,[{action:'repair',choice:'rail',wrong:true,targets:['gain']}])];
+store.sync(repairSpacingRows(rows));
+const report=energyWeekly(repairSpacingRows(rows),store,'2026-10-23',{plan:repairPriorities(rows),dailyLimit:1});
+assert.equal(report.current.count,1);assert.equal(report.previous.mean,50);assert.equal(report.current.mean,85);assert.equal(report.streak.current,1);assert.equal(report.goalsMet,1);
+assert.equal(report.difficult[0].fault,'rail');assert.equal(report.difficult[0].weekErrors,1);assert(report.dates.every(d=>d.items.length<=1));assert.equal(report.dates.flatMap(d=>d.items).length,6);
+assert(report.dates.every(d=>d.items.every(x=>d.date>=x.due)));assert.equal(report.next,'2026-10-26');
+console.log('PASS repair week metrics, false-intervention attribution, goal-aware schedule, unique causes and due boundaries.');

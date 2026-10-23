@@ -1,3 +1,4 @@
+import {renderEnergyWeekly} from './energy-weekly.mjs';
 import {createRepairSpacing,repairSpacingRows} from './energy-repair-spacing.mjs';
 import {renderEnergyCalendar} from './energy-calendar-ui.mjs';
 import {createRepairHistory,repairPriorities} from './energy-repair-history.mjs';
@@ -44,7 +45,8 @@ function renderRepairHistory(){
  add('h2','Tu historial de reparaciones');add('p','Hasta 100 talleres completados, guardados en este navegador. La puntuación es independiente del examen.');if(repairHistory.warning())add('p',repairHistory.warning());
  const rows=repairHistory.all();
  const launch=(c,target)=>{const source={id:'practice:'+crypto.randomUUID(),status:'finished',cases:[c]};repair=createExamRepair(source,0);repair.state.reviewTarget=target||null;retry=null;view(0);panel.scrollIntoView({block:'start'});};
- renderEnergyCalendar(host,{store:repairSpacing,rows,plan:repairPriorities(rows),kind:'repair',begin:item=>launch({lab:item.lab,level:item.level,faults:[item.fault]},item.fault)});
+ renderEnergyWeekly(host,{rows:repairSpacingRows(rows),store:repairSpacing,plan:repairPriorities(rows),kind:'repair',begin:item=>launch({lab:item.lab,level:item.level,faults:[item.fault]},item.fault)});
+ renderEnergyCalendar(host,{onGoalChange:render,store:repairSpacing,rows,plan:repairPriorities(rows),kind:'repair',begin:item=>launch({lab:item.lab,level:item.level,faults:[item.fault]},item.fault)});
  if(!rows.length)add('p','Completa un taller para ver tus puntuaciones y dificultades. También puedes empezar con un reto personalizado.');
  const list=add('details','');const summary=document.createElement('summary');summary.textContent='Comparar puntuaciones · '+rows.length+' reparaciones';list.append(summary);
  for(let i=rows.length-1;i>=0;i--){const r=rows[i],prev=rows.slice(0,i).reverse().find(x=>x.lab===r.lab&&x.level===r.level);const p=document.createElement('p');p.textContent=new Date(r.date).toLocaleString('es-CO')+' · '+names[r.lab]+' · '+({basic:'básico',combined:'combinado',intermittent:'intermitente'}[r.level])+' · '+r.score+'/100'+(prev?' · '+(r.score-prev.score)+' puntos respecto al anterior del mismo laboratorio y nivel':' · Primera referencia en este nivel');p.textContent+=' · '+r.faults.map(f=>faultCatalog[r.lab].find(x=>x.id===f).label).join(' + ');list.append(p);const meter=document.createElement('meter');meter.max=100;meter.value=r.score;meter.setAttribute('aria-label','Puntuación '+r.score);list.append(meter);const b=document.createElement('button');b.textContent='Repetir estas averías';b.dataset.repeatRepair=r.id;b.onclick=()=>launch(r);list.append(b);}

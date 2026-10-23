@@ -164,3 +164,6 @@ Los accesos del historial cargan un estado de taller independiente del examen vi
 
 ### Calendario de reparaciones
 Cada repaso programado usa el estado de reparación independiente y los bancos existentes. El calendario elige causa y nivel; no altera el modelo físico ni el reloj compartido. La verificación completa actualiza la agenda, la meta y la racha y conserva las notas de examen.
+
+### Plan semanal de reparación
+Las tarjetas semanales abren el mismo taller independiente con causa y dificultad recomendadas. No introducen modelos visuales distintos: referencia y averiado siguen compartiendo el tiempo. Practicar una tarjeta futura ejecuta el reto inmediatamente y recalcula los vencimientos al completarlo.
