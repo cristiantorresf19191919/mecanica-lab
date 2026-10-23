@@ -179,3 +179,6 @@ El nivel seleccionado conserva los mismos modelos de averías estables, intermit
 
 ### Tu secuencia y la recomendada en Anatomy
 El protocolo de comparación acepta causas reparadas de A además de B, validadas contra las causas del caso. Los mismos modelos calculan los dos estados en el mismo instante. Las cabeceras distinguen «Tu secuencia» y «Recomendada»; el panel explica que el cursor compara acciones, no tiempo real. Se mantiene el despiece y la navegación de cámara existentes sin geometría nueva.
+
+### Decisiones guiadas con pausa
+El protocolo de comparación puede pausar ambos bancos antes de una pregunta y bloquear reproducción. Tras elegir, aplica las causas reparadas de la elección a A y las recomendadas a B, manteniendo el reloj. La próxima pregunta empieza desde el estado dejado por el usuario; esta comparación por decisión se explica en pantalla para no confundirla con una secuencia recomendada acumulativa.
