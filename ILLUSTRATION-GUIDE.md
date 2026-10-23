@@ -176,3 +176,6 @@ La revisión archivada reutiliza las instantáneas antes/después de cada interv
 
 ### Revisión de reparación adaptativa
 El nivel seleccionado conserva los mismos modelos de averías estables, intermitentes y combinadas. Los controles anterior/siguiente recorren instantáneas de intervención y muestran qué paso está seleccionado. Ambos bancos conservan el reloj común; la revisión representa estados antes/después, no una grabación del tiempo real de las acciones del usuario.
+
+### Tu secuencia y la recomendada en Anatomy
+El protocolo de comparación acepta causas reparadas de A además de B, validadas contra las causas del caso. Los mismos modelos calculan los dos estados en el mismo instante. Las cabeceras distinguen «Tu secuencia» y «Recomendada»; el panel explica que el cursor compara acciones, no tiempo real. Se mantiene el despiece y la navegación de cámara existentes sin geometría nueva.

@@ -1,0 +1,7 @@
+import assert from 'node:assert/strict';
+import {compareRepairSequence,sequenceSnapshot} from '../dist/concepts/repair-sequence.mjs';
+const c={lab:'transformload',faults:['ratio','load'],steps:[{action:'verify',before:[],after:[]},{action:'repair',choice:'load',before:[],after:['load']},{action:'repair',choice:'load',before:['load'],after:['load']},{action:'repair',choice:'ratio',before:['load'],after:['load','ratio']},{action:'verify',before:['load','ratio'],after:['load','ratio']}]};
+const original=JSON.stringify(c),p=compareRepairSequence(c);assert.equal(p.avoidable,2);assert.equal(p.actual[1].kind,'useful');assert.equal(p.recommended.length,3);assert.deepEqual(sequenceSnapshot(c,1).user,[]);assert.deepEqual(sequenceSnapshot(c,1).recommendedIds,['ratio']);assert.deepEqual(sequenceSnapshot(c,5).recommendedIds,['ratio','load']);assert.equal(JSON.stringify(c),original);
+const single={lab:'opamp',faults:['gain'],steps:[{action:'repair',choice:'rail',before:[],after:[]}]};assert.equal(compareRepairSequence(single).actual[0].kind,'unnecessary');assert.deepEqual(compareRepairSequence(single).recommended.map(x=>x.choice),['gain',null]);
+assert.deepEqual(compareRepairSequence({lab:'relief',faults:['spring','pump'],steps:[]}).recommended.map(x=>x.choice),['pump','spring',null]);
+console.log('PASS avoidable actions, valid alternative order, recommended order, synchronized action snapshots, final holds and immutability.');

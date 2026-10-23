@@ -1,3 +1,4 @@
+import {sequenceSnapshot,renderSequence} from './repair-sequence.mjs';
 import {createRepairExamArchive,repairExamMastery} from './repair-exam-history.mjs';
 import {createExamRepair,applyExamRepair} from './energy-exam-repair.mjs';
 import {createRepairExam,repairExamAction,repairExamScore,validRepairExam} from './repair-exam-model.mjs';
@@ -9,13 +10,13 @@ import {faultCatalog,energyFaultScore} from './energy-faults.mjs';
 let storage;try{storage=localStorage;}catch{}
 const results=createEnergyResults(storage),history=createRepairHistory(storage,results.all()),spacing=createRepairSpacing(storage),general=createEnergySpacing(storage),key='mecanica.repair-exam.v1';
 const archive=createRepairExamArchive(storage);let inspected=null,retry=null;const shown=()=>inspected||exam;
-let exam=null,selected=0,ready=false,reviewIds=[],reviewStep=null,warning='';
+let exam=null,selected=0,ready=false,reviewIds=[],reviewStep=null,sequence=null,warning='';
 try{const saved=JSON.parse(storage.getItem(key)||'null');if(validRepairExam(saved))exam=saved;}catch{warning='No se pudo recuperar el examen anterior.';}
 const host=document.querySelector('#repairExam'),frame=document.querySelector('#lab'),names={transformload:'Transformador',opamp:'Operacional',relief:'Hidráulica'};
 function persist(){try{storage.setItem(key,JSON.stringify(exam));}catch{warning='Este examen solo se conserva durante esta sesión.';}}
 function saveResults(){if(exam?.status!=='finished')return;archive.add(exam);for(const c of exam.cases){history.save(c);results.save(c);}spacing.sync(repairSpacingRows(history.all()));general.sync(results.all());}
-function send(){if(!ready||!shown())return;const c=retry?.state||shown().cases[selected];frame.contentWindow.postMessage({type:'energy-exam-case',faults:c.faults,level:c.level,repairedIds:retry||shown().status==='active'?c.repairedIds:reviewIds},location.origin);}
-function view(i,ids=[],step=null){reviewStep=step;selected=i;reviewIds=[...ids];frame.hidden=false;const url='index.html?id='+(retry?.state||shown().cases[i]).lab+'&exam=1';if(frame.getAttribute('src')===url)send();else{ready=false;frame.src=url;}render();}
+function send(){if(!ready||!shown())return;const c=retry?.state||shown().cases[selected];frame.contentWindow.postMessage({type:'energy-exam-case',faults:c.faults,level:c.level,repairedIds:sequence?sequenceSnapshot(c,sequence.index).recommendedIds:retry||shown().status==='active'?c.repairedIds:reviewIds,...(sequence?{primaryRepairedIds:sequenceSnapshot(c,sequence.index).user}:{})},location.origin);}
+function view(i,ids=[],step=null,comparison=null){sequence=comparison;reviewStep=step;selected=i;reviewIds=[...ids];frame.hidden=false;const url='index.html?id='+(retry?.state||shown().cases[i]).lab+'&exam=1';if(frame.getAttribute('src')===url)send();else{ready=false;frame.src=url;}render();}
 window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==frame.contentWindow)return;if(e.data?.type==='energy-exam-ready'){ready=true;send();render();}if(e.data?.type==='concept-height'&&Number.isFinite(e.data.height))frame.style.height=Math.max(700,Math.min(14000,e.data.height))+'px';});
 function render(){renderArchive();host.replaceChildren();const el=(tag,text,parent=host)=>{const n=document.createElement(tag);n.textContent=text;parent.append(n);return n;};const button=(text,fn,parent=host)=>{const b=el('button',text,parent);b.onclick=fn;return b;};
  for(const w of [warning,history.warning(),results.warning(),spacing.warning()])if(w)el('p',w);
@@ -31,9 +32,9 @@ function render(){renderArchive();host.replaceChildren();const el=(tag,text,pare
  }
  const reviewed=shown();el('h2','Examen terminado · '+repairExamScore(reviewed)+'/100');el('p','Resultados guardados por separado de tus exámenes de diagnóstico. Tus errores y verificaciones prematuras ya ajustan el plan de repaso.');
  reviewed.cases.forEach((c,i)=>{const card=el('article','');card.className='repair-case';el('h3',names[c.lab]+' · '+energyFaultScore(c)+'/100 · '+c.errors+' errores',card);el('p',c.adaptation||'Examen anterior a la selección adaptativa.',card);el('p',c.faults.map(f=>faultCatalog[c.lab].find(x=>x.id===f).label).join(' + '),card);for(const f of c.faults)el('p',faultCatalog[c.lab].find(x=>x.id===f).explain,card);
- if(c.errors>0){const b=button('Repetir este caso con errores',()=>{retry=createExamRepair(reviewed,i);view(i);},card);b.dataset.retryRepairCase=i;}button('Comparar caso original',()=>view(i),card);button('Ver reparación completa',()=>view(i,c.faults),card);
+ if(c.errors>0){const b=button('Repetir este caso con errores',()=>{retry=createExamRepair(reviewed,i);view(i);},card);b.dataset.retryRepairCase=i;}const compare=button('Comparar mi secuencia con la recomendada',()=>view(i,[],null,{index:0}),card);compare.dataset.compareSequence=i;button('Comparar caso original',()=>view(i),card);button('Ver reparación completa',()=>view(i,c.faults),card);
  for(const [j,step] of c.steps.entries()){el('p','Paso '+(j+1)+' · '+(step.action==='verify'?'Comprobación':faultCatalog[c.lab].find(f=>f.id===step.choice)?.repair||'Intervención')+' · '+(step.wrong?'−15 puntos. ':'Correcto. ')+step.explanation,card);button('Antes del paso '+(j+1),()=>view(i,step.before,{index:j,phase:'before'}),card);button('Después del paso '+(j+1),()=>view(i,step.after,{index:j,phase:'after'}),card);}
- });el('h3','Comparación seleccionada · '+names[reviewed.cases[selected].lab]);el('p','A es la referencia; B reproduce las causas restantes en este paso. Usa la pausa y la velocidad de los bancos para observar las intermitencias.');
+ });el('h3','Comparación seleccionada · '+names[reviewed.cases[selected].lab]);if(!sequence)el('p','A es la referencia; B reproduce las causas restantes en este paso. Usa la pausa y la velocidad de los bancos para observar las intermitencias.');if(sequence){const section=el('section','');renderSequence(section,reviewed.cases[selected],sequence.index,n=>view(selected,[],null,{index:n}));button('Volver a referencia normal',()=>view(selected));}
  if(reviewStep){const c=reviewed.cases[selected],j=reviewStep.index,step=c.steps[j];el('h4','Paso '+(j+1)+' · '+(reviewStep.phase==='before'?'Antes de intervenir':'Después de intervenir'));el('p',step.explanation);button('Paso anterior',()=>{const k=Math.max(0,j-1);view(selected,c.steps[k].before,{index:k,phase:'before'});}).disabled=j===0;button('Paso siguiente',()=>{const k=Math.min(c.steps.length-1,j+1);view(selected,c.steps[k].after,{index:k,phase:'after'});}).disabled=j===c.steps.length-1;}
  const link=el('a','Ver mi plan de repaso actualizado');link.href='energy-exam.html?v=repair-weekly#repairHistory';button('Nuevo examen de reparación',()=>{inspected=null;exam=createRepairExam(history.all(),Math.random,archive.all());persist();view(0);});
 }
@@ -55,4 +56,4 @@ function renderArchive(){
  for(const m of repairExamMastery(rows))add('p',names[m.lab]+' · '+m.label+' · '+m.clean+'/'+m.recent+' recientes sin errores · '+m.errors+' errores acumulados · '+m.status);
 }
 if(exam){saveResults();view(exam.status==='active'?Math.max(0,exam.cases.findIndex(c=>!c.done)):0);}else render();
-window.repairExamDebug=()=>({exam,selected,ready,reviewIds,reviewStep,inspected,retry});
+window.repairExamDebug=()=>({exam,selected,ready,reviewIds,reviewStep,sequence,inspected,retry});
