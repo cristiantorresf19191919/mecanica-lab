@@ -149,3 +149,6 @@ El informe y las tarjetas semanales son vistas de los resultados y vencimientos 
 
 ### Examen de los tres bancos
 Reutiliza las escenas Anatomy mediante mensajes de mismo origen restringidos al padre. En evaluación se oculta el panel de diagnóstico con pistas; al finalizar, la revisión carga las mismas causas y admite estado reparado. No se crean animaciones alternativas a los modelos. El reloj compartido mantiene A/B comparables; las correcciones explican qué causa faltaba o sobraba en la respuesta. Pruebas del flujo completo y geometría existente en escritorio/móvil.
+
+### Archivo y repetición de exámenes de energía
+El archivo reutiliza los mismos bancos Anatomy y mensajes de comparación, sin geometría nueva. Al repetir un caso se restablecen exactamente sus causas y nivel, con reloj compartido entre referencia y averiado. La revisión permite comparar el fallo y observar ambos reparados. Los resultados de práctica quedan separados de las notas originales; el historial indica la dificultad para contextualizar diferencias. Validado en escritorio y móvil, incluyendo persistencia y ausencia de errores de consola.
