@@ -170,3 +170,6 @@ Las tarjetas semanales abren el mismo taller independiente con causa y dificulta
 
 ### Evaluación de reparación y revisión por intervención
 El examen usa las mismas escenas Anatomy en modo de evaluación, con la ayuda del laboratorio oculta. Cada acción conserva listas de causas reparadas antes y después; la revisión aplica esas listas al banco B y mantiene A nominal. Así se observa una reparación parcial o innecesaria sin recrear la animación con datos distintos. La verificación sigue exigiendo resolver todas las causas, incluidas las intermitentes.
+
+### Archivo y reintento del examen de reparación
+La revisión archivada reutiliza las instantáneas antes/después de cada intervención en los bancos existentes. Un reintento crea un estado de reparación nuevo con idénticas causas y nivel. Las listas de causas reparadas se envían al banco B mientras A mantiene la referencia y el mismo reloj; las notas originales permanecen inmutables.
