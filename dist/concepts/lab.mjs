@@ -1,9 +1,11 @@
+import {mountEnergy3D} from './energy-3d.mjs';
 import {drawAdvanced} from './advanced.mjs';
 import {catalog} from './catalog.mjs';
 import {calculate,controllerStep,TAU} from './models.mjs';
 import * as iso from '../anatomy/iso-kit.mjs';
 const id=new URLSearchParams(location.search).get('id')||'threephase',cfg=catalog[id];
 if(!cfg)throw Error('Missing concept '+id);
+const energy3d=mountEnergy3D(id);
 const $=s=>document.querySelector(s),canvas=$('#scene'),ctx=canvas.getContext('2d');
 const colors=['#64d7df','#ffbe70','#f28caa'],white='#dbe9e4',muted='#8aaba7',green='#b9dd83';
 let baseline=null,currentModel=null;
@@ -108,13 +110,13 @@ function draw(m){ctx.fillStyle='#102127';ctx.fillRect(0,0,1000,520);text('FIG. '
  const extra=drawAdvanced(id,m,{ctx,text,line,box,circle,arrow,grid,wave,bar,colors,green,white,muted,t});if(extra)legend=extra;
  $('#legend').innerHTML=legend.map((s,i)=>`<span style="--color:${(i===3?green:colors[i%3])}">${s}</span>`).join('');
 }
-function render(){const dpr=Math.min(devicePixelRatio||1,2);if(canvas.width!==1000*dpr){canvas.width=1000*dpr;canvas.height=520*dpr}ctx.setTransform(dpr,0,0,dpr,0,0);const m=calculate(id,cfg.type,+$('#a').value,+$('#b').value,t,on);if(cfg.type==='control'){m.metrics=[['Medida',control.y,'mm'],['Error',(id==='pi'?70:+$('#a').value)-control.y,'mm'],['Mando',control.u,'%']]};currentModel=m;draw(m);$('#metrics').innerHTML=m.metrics.map(([l,n,u])=>`<div class="metric"><small>${l}</small><strong>${format(n)}</strong><em>${u}</em></div>`).join('');$('#scrub').value=t%10;if(baseline){$('#comparison').innerHTML='<b>CAPTURA A</b> · '+baseline.label+'<div class="comparison-grid">'+m.metrics.map(([label,v,unit],i)=>'<div><small>'+label+'</small><span>'+format(baseline.values[i])+' → '+format(v)+' '+unit+'</span><em>Δ '+format(v-baseline.values[i])+'</em></div>').join('')+'</div>';}}
+function render(){const dpr=Math.min(devicePixelRatio||1,2);if(canvas.width!==1000*dpr){canvas.width=1000*dpr;canvas.height=520*dpr}ctx.setTransform(dpr,0,0,dpr,0,0);const m=calculate(id,cfg.type,+$('#a').value,+$('#b').value,t,on);if(cfg.type==='control'){m.metrics=[['Medida',control.y,'mm'],['Error',(id==='pi'?70:+$('#a').value)-control.y,'mm'],['Mando',control.u,'%']]};currentModel=m;energy3d?.update(m);draw(m);$('#metrics').innerHTML=m.metrics.map(([l,n,u])=>`<div class="metric"><small>${l}</small><strong>${format(n)}</strong><em>${u}</em></div>`).join('');$('#scrub').value=t%10;if(baseline){$('#comparison').innerHTML='<b>CAPTURA A</b> · '+baseline.label+'<div class="comparison-grid">'+m.metrics.map(([label,v,unit],i)=>'<div><small>'+label+'</small><span>'+format(baseline.values[i])+' → '+format(v)+' '+unit+'</span><em>Δ '+format(v-baseline.values[i])+'</em></div>').join('')+'</div>';}}
 function playLabel(){$('#play').textContent=playing?'Pausar':'Reproducir';$('#play').setAttribute('aria-pressed',String(playing))}
 function start(){if(!raf&&visible&&playing){last=performance.now();raf=requestAnimationFrame(loop)}}
 function loop(now){raf=0;if(!playing||!visible)return;const dt=Math.min((now-last)/1000,.035);last=now;const scaledDt=dt*Number($('#speed').value);t+=scaledDt;if(cfg.type==='control'){const a=+$('#a').value,b=+$('#b').value;for(let i=0;i<4;i++)controllerStep(control,id==='pi'?70:a,id==='pi'?a:b,id==='pi'?b:0,scaledDt/4);history.push({t,y:control.y});history=history.filter(h=>h.t>t-20)}render();raf=requestAnimationFrame(loop)}
 $('#play').onclick=()=>{playing=!playing;if(cfg.type==='engine')on=true;playLabel();start()};$('#reset').onclick=()=>{t=0;control={y:0,integral:0,u:0};history=[];render()};$('#scrub').oninput=()=>{playing=false;t=+$('#scrub').value;playLabel();if(cfg.type==='control'){control={y:0,integral:0,u:0};history=[];const a=+$('#a').value,b=+$('#b').value;for(let s=0;s<t;s+=.01){controllerStep(control,id==='pi'?70:a,id==='pi'?a:b,id==='pi'?b:0,.01);history.push({t:s,y:control.y})}}render()};
 $('#expand').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{}};
-new IntersectionObserver(entries=>{visible=entries.at(-1).isIntersecting;if(visible)start();else if(raf){cancelAnimationFrame(raf);raf=0}}).observe(canvas);
+const visibleSurfaces=new Set();const surfaceObserver=new IntersectionObserver(entries=>{for(const e of entries){if(e.isIntersecting)visibleSurfaces.add(e.target);else visibleSurfaces.delete(e.target);}visible=visibleSurfaces.size>0;if(visible)start();else if(raf){cancelAnimationFrame(raf);raf=0}});surfaceObserver.observe(canvas);if(energy3d)surfaceObserver.observe(document.querySelector('.energy-viewport'));
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',e=>{if(e.matches){playing=false;playLabel()}});
 window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='lab-pause'){playing=false;playLabel()}});
 $('#zoom').onclick=()=>{const enabled=$('.screen').classList.toggle('zoomed');$('#zoom').textContent=enabled?'Vista completa':'Zoom ×1,6';$('#zoom').setAttribute('aria-pressed',String(enabled))};
