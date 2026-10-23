@@ -146,3 +146,6 @@ Las fechas y el hábito no modifican los modelos 3D. Cada botón de repaso conse
 
 ### Resumen semanal y planificación de energía
 El informe y las tarjetas semanales son vistas de los resultados y vencimientos existentes. Sus botones usan `beginReview` y conservan el modelo físico y el reloj común de los dos bancos 3D. Se verificó la apertura de una causa desde una fecha futura como práctica inmediata, su reparación y actualización del resumen. Los días sin vencimientos se muestran explícitamente; la programación futura es una previsión recalculable, no una promesa de avance.
+
+### Examen de los tres bancos
+Reutiliza las escenas Anatomy mediante mensajes de mismo origen restringidos al padre. En evaluación se oculta el panel de diagnóstico con pistas; al finalizar, la revisión carga las mismas causas y admite estado reparado. No se crean animaciones alternativas a los modelos. El reloj compartido mantiene A/B comparables; las correcciones explican qué causa faltaba o sobraba en la respuesta. Pruebas del flujo completo y geometría existente en escritorio/móvil.
