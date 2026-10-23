@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {createEnergyExam,energyExamPlan} from '../dist/concepts/energy-exam-model.mjs';
+const make=(id,random,level='basic',correct=true)=>{const e=createEnergyExam([],()=>random);e.id=id;e.status='finished';e.finishedAt=new Date(2026,9,Number(id)+1).toISOString();e.cases.forEach(c=>c.level=level);e.answers=e.cases.map(c=>correct?[...c.faults]:[]);return e;};
+const bad=[make('0',0,'basic',false)];
+assert.equal(energyExamPlan(bad,'transformload').items[0].weight,5);
+assert.equal(createEnergyExam([],()=>.5,bad).cases[0].fault,'ratio');
+const good=[make('0',0),make('1',0)];
+assert.equal(createEnergyExam([],()=>0,good).cases[0].level,'intermittent');
+assert.equal(createEnergyExam([],()=>0,[good[0],good[0]]).cases[0].level,'basic');
+const advanced=[...good,make('2',0,'intermittent'),make('3',.99),make('4',.99),make('5',.99,'intermittent')];
+assert(createEnergyExam([],()=>.5,advanced).cases.every(c=>c.level==='combined'));
+advanced.push(make('6',0,'intermittent',false));
+assert.equal(createEnergyExam([],()=>0,advanced).cases[0].level,'basic');
+const falsePositive=make('7',0);falsePositive.answers[0]=['ratio','load'];
+assert.equal(energyExamPlan([falsePositive],'transformload').items[1].errors,1);
+assert.deepEqual(createEnergyExam([{fake:'practice'}],()=>0,good).cases.map(c=>c.level),['intermittent','intermittent','intermittent']);
+console.log('PASS weighted errors, false positives, novelty, promotion, combined prerequisites, downgrade, exam dedupe and rehearsal isolation.');

@@ -152,3 +152,6 @@ Reutiliza las escenas Anatomy mediante mensajes de mismo origen restringidos al 
 
 ### Archivo y repetición de exámenes de energía
 El archivo reutiliza los mismos bancos Anatomy y mensajes de comparación, sin geometría nueva. Al repetir un caso se restablecen exactamente sus causas y nivel, con reloj compartido entre referencia y averiado. La revisión permite comparar el fallo y observar ambos reparados. Los resultados de práctica quedan separados de las notas originales; el historial indica la dificultad para contextualizar diferencias. Validado en escritorio y móvil, incluyendo persistencia y ausencia de errores de consola.
+
+### Revisión del examen adaptativo de energía
+La selección adaptativa modifica las causas y el nivel, sin alterar geometrías ni crear relojes adicionales. La revisión de cada caso reutiliza los dos bancos existentes mediante el protocolo de comparación de mismo origen. La explicación aparece después de las respuestas y contextualiza intermitencias, síntomas y estado reparado.
