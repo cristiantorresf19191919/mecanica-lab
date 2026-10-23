@@ -36,5 +36,8 @@ console.log('PASS: six new models, phase direction, pneumatic truth tables, robo
 near(calculate("transformload","transformload",2,48,0).power,48);
 near(calculate("transformload","transformload",2,48,0).ip,2);
 near(calculate("opamp","opamp",5,3,.5).output,12);
-near(calculate("relief","relief",8,60,0).heat,600);
+near(calculate("relief","relief",8,60,0).heat,720);
 near(calculate("relief","relief",4,60,0).speed,.1);
+
+for(let a=1;a<=12;a+=.1){const m=calculate("relief","relief",a,60,1);near(m.returnFlow+m.cylinderFlow,6);near(m.speed,m.cylinderFlow/60);near(m.heat,m.p*m.returnFlow*100/60);assert(m.opening>=0&&m.opening<=1);}
+near(calculate("relief","relief",6.5,60,1).returnFlow,2.5);
