@@ -167,3 +167,6 @@ Cada repaso programado usa el estado de reparación independiente y los bancos e
 
 ### Plan semanal de reparación
 Las tarjetas semanales abren el mismo taller independiente con causa y dificultad recomendadas. No introducen modelos visuales distintos: referencia y averiado siguen compartiendo el tiempo. Practicar una tarjeta futura ejecuta el reto inmediatamente y recalcula los vencimientos al completarlo.
+
+### Evaluación de reparación y revisión por intervención
+El examen usa las mismas escenas Anatomy en modo de evaluación, con la ayuda del laboratorio oculta. Cada acción conserva listas de causas reparadas antes y después; la revisión aplica esas listas al banco B y mantiene A nominal. Así se observa una reparación parcial o innecesaria sin recrear la animación con datos distintos. La verificación sigue exigiendo resolver todas las causas, incluidas las intermitentes.

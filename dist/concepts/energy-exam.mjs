@@ -42,7 +42,7 @@ function renderRepair(el,button){
 function renderRepairHistory(){
  let host=document.querySelector('#repairHistory');if(!host){host=document.createElement('section');host.id='repairHistory';panel.before(host);}host.replaceChildren();
  const add=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;host.append(n);return n;};
- add('h2','Tu historial de reparaciones');add('p','Hasta 100 talleres completados, guardados en este navegador. La puntuación es independiente del examen.');if(repairHistory.warning())add('p',repairHistory.warning());
+ add('h2','Tu historial de reparaciones');const examLink=add('a','Examen semanal de reparación →');examLink.href='repair-exam.html';add('p','Hasta 100 talleres completados, guardados en este navegador. La puntuación es independiente del examen.');if(repairHistory.warning())add('p',repairHistory.warning());
  const rows=repairHistory.all();
  const launch=(c,target)=>{const source={id:'practice:'+crypto.randomUUID(),status:'finished',cases:[c]};repair=createExamRepair(source,0);repair.state.reviewTarget=target||null;retry=null;view(0);panel.scrollIntoView({block:'start'});};
  renderEnergyWeekly(host,{rows:repairSpacingRows(rows),store:repairSpacing,plan:repairPriorities(rows),kind:'repair',begin:item=>launch({lab:item.lab,level:item.level,faults:[item.fault]},item.fault)});
