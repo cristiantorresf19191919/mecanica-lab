@@ -161,3 +161,6 @@ El protocolo de examen acepta una lista validada de causas reparadas. El banco B
 
 ### Retos desde el historial de reparaciones
 Los accesos del historial cargan un estado de taller independiente del examen visible. El banco normal permanece de referencia y el averiado recibe las causas y reparaciones de ese estado; ambos mantienen el mismo reloj. La personalización modifica causa y nivel sin introducir geometrías ni modelos visuales diferentes.
+
+### Calendario de reparaciones
+Cada repaso programado usa el estado de reparación independiente y los bancos existentes. El calendario elige causa y nivel; no altera el modelo físico ni el reloj compartido. La verificación completa actualiza la agenda, la meta y la racha y conserva las notas de examen.

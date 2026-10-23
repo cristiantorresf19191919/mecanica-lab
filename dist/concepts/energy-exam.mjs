@@ -1,3 +1,5 @@
+import {createRepairSpacing,repairSpacingRows} from './energy-repair-spacing.mjs';
+import {renderEnergyCalendar} from './energy-calendar-ui.mjs';
 import {createRepairHistory,repairPriorities} from './energy-repair-history.mjs';
 import {createEnergyExamHistory,energyExamScore,energyMastery} from './energy-exam-history.mjs';
 import {createEnergyResults} from './energy-results.mjs';
@@ -5,7 +7,7 @@ import {createEnergySpacing} from './energy-spacing.mjs';
 import {createEnergyExam,finishEnergyExam,examCorrect} from './energy-exam-model.mjs';
 import {createExamRepair,applyExamRepair} from './energy-exam-repair.mjs';
 import {energyFaultScore,faultCatalog} from './energy-faults.mjs';
-let storage;try{storage=localStorage;}catch{}const results=createEnergyResults(storage),spacing=createEnergySpacing(storage),key='mecanica.energy-exam.v1';const archive=createEnergyExamHistory(storage);const repairHistory=createRepairHistory(storage,results.all());let inspected=null,retry=null,repair=null;const repairs=new Map();const shown=()=>inspected||exam;let exam=null,warning='',selected=0,ready=false,reviewRepaired=false;
+let storage;try{storage=localStorage;}catch{}const results=createEnergyResults(storage),spacing=createEnergySpacing(storage),key='mecanica.energy-exam.v1';const archive=createEnergyExamHistory(storage);const repairHistory=createRepairHistory(storage,results.all());const repairSpacing=createRepairSpacing(storage);repairSpacing.sync(repairSpacingRows(repairHistory.all()));let inspected=null,retry=null,repair=null;const repairs=new Map();const shown=()=>inspected||exam;let exam=null,warning='',selected=0,ready=false,reviewRepaired=false;
 try{const s=JSON.parse(storage.getItem(key)||'null');if(s&&['active','finished'].includes(s.status)&&Array.isArray(s.cases)&&s.cases.length===3&&s.cases.every(c=>faultCatalog[c.lab]&&Array.isArray(c.faults)&&c.faults.length&&c.faults.every(f=>faultCatalog[c.lab].some(x=>x.id===f)))&&Array.isArray(s.answers)&&s.answers.length<=3&&s.answers.every(Array.isArray))exam=s;}catch{warning='No se pudo recuperar el intento anterior.';}
 const panel=document.querySelector('#exam'),frame=document.querySelector('#lab'),names={transformload:'Transformador',opamp:'Operacional',relief:'Hidráulica'};
 function persist(){try{storage.setItem(key,JSON.stringify(exam));}catch{warning='El examen solo se conserva en esta sesión.';}}
@@ -27,7 +29,7 @@ function renderRepair(el,button){
  el('p','Puntuación: '+energyFaultScore(s)+'/100 · Errores: '+s.errors+' · Pistas: '+s.hints);
  el('p','−15 por intervención innecesaria o comprobación prematura; −10 por pista. Mínimo 0. No cambia la nota del examen.');
  const feedback=el('p',s.log.at(-1)||'Observa las magnitudes de ambos bancos antes de intervenir.');feedback.setAttribute('role','status');
- const action=(kind,choice)=>{applyExamRepair(repair,kind,choice);if(s.done){repairHistory.save(s);results.save(s);spacing.sync(results.all());}send();render();};
+ const action=(kind,choice)=>{applyExamRepair(repair,kind,choice);if(s.done){repairHistory.save(s);repairSpacing.sync(repairSpacingRows(repairHistory.all()));results.save(s);spacing.sync(results.all());}send();render();};
  for(const f of faultCatalog[s.lab]){const b=button((s.repairedIds.includes(f.id)?'✓ Aplicada · ':'')+f.repair,()=>action('repair',f.id));b.dataset.repairFault=f.id;b.disabled=!ready||s.done;}
  const hint=button('Pedir pista (−10)',()=>action('hint'));hint.dataset.repairHint='';hint.disabled=!ready||s.done;
  const verify=button('Comprobar todas las averías',()=>action('verify'));verify.dataset.repairVerify='';verify.disabled=!ready||s.done;
@@ -42,6 +44,7 @@ function renderRepairHistory(){
  add('h2','Tu historial de reparaciones');add('p','Hasta 100 talleres completados, guardados en este navegador. La puntuación es independiente del examen.');if(repairHistory.warning())add('p',repairHistory.warning());
  const rows=repairHistory.all();
  const launch=(c,target)=>{const source={id:'practice:'+crypto.randomUUID(),status:'finished',cases:[c]};repair=createExamRepair(source,0);repair.state.reviewTarget=target||null;retry=null;view(0);panel.scrollIntoView({block:'start'});};
+ renderEnergyCalendar(host,{store:repairSpacing,rows,plan:repairPriorities(rows),kind:'repair',begin:item=>launch({lab:item.lab,level:item.level,faults:[item.fault]},item.fault)});
  if(!rows.length)add('p','Completa un taller para ver tus puntuaciones y dificultades. También puedes empezar con un reto personalizado.');
  const list=add('details','');const summary=document.createElement('summary');summary.textContent='Comparar puntuaciones · '+rows.length+' reparaciones';list.append(summary);
  for(let i=rows.length-1;i>=0;i--){const r=rows[i],prev=rows.slice(0,i).reverse().find(x=>x.lab===r.lab&&x.level===r.level);const p=document.createElement('p');p.textContent=new Date(r.date).toLocaleString('es-CO')+' · '+names[r.lab]+' · '+({basic:'básico',combined:'combinado',intermittent:'intermitente'}[r.level])+' · '+r.score+'/100'+(prev?' · '+(r.score-prev.score)+' puntos respecto al anterior del mismo laboratorio y nivel':' · Primera referencia en este nivel');p.textContent+=' · '+r.faults.map(f=>faultCatalog[r.lab].find(x=>x.id===f).label).join(' + ');list.append(p);const meter=document.createElement('meter');meter.max=100;meter.value=r.score;meter.setAttribute('aria-label','Puntuación '+r.score);list.append(meter);const b=document.createElement('button');b.textContent='Repetir estas averías';b.dataset.repeatRepair=r.id;b.onclick=()=>launch(r);list.append(b);}

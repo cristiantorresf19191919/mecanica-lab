@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {createRepairSpacing,repairSpacingRows} from '../dist/concepts/energy-repair-spacing.mjs';
+const data=new Map(),storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)},s=createRepairSpacing(storage);
+const row=(id,day,events=[])=>({id,date:day+'T12:00:00',lab:'opamp',faults:['gain'],score:100,events});
+const sync=r=>s.sync(repairSpacingRows(r));
+s.setGoal(1,'2026-10-01');sync([row('a','2026-10-01')]);sync([row('a','2026-10-01')]);assert.equal(s.snapshot().days['2026-10-01'].count,1);
+sync([row('b','2026-10-02')]);assert.equal(s.snapshot().faults['opamp:gain'].due,'2026-10-05');
+sync([row('c','2026-10-03')]);assert.equal(s.snapshot().faults['opamp:gain'].due,'2026-10-05');assert.equal(s.streak('2026-10-03').current,3);
+sync([row('d','2026-10-05',[{action:'hint',targets:['gain']}])]);assert.equal(s.snapshot().faults['opamp:gain'].due,'2026-10-06');
+sync([row('e','2026-10-06',[{action:'repair',choice:'rail',wrong:true,targets:['gain']}])]);assert.equal(s.snapshot().faults['opamp:rail'].stage,0);
+s.setGoal(3,'2026-10-06');assert.equal(s.snapshot().days['2026-10-01'].goal,1);assert.equal(s.snapshot().days['2026-10-06'].goal,3);
+assert.deepEqual(createRepairSpacing(storage).snapshot(),s.snapshot());assert(!data.has('mecanica.energy-spacing.v1'));
+console.log('PASS repair-only ledger, dedupe, early practice keeps due date, due advancement, hints reset, false intervention attribution, streak and historical goals.');
