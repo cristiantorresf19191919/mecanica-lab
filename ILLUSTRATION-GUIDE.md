@@ -182,3 +182,6 @@ El protocolo de comparación acepta causas reparadas de A además de B, validada
 
 ### Decisiones guiadas con pausa
 El protocolo de comparación puede pausar ambos bancos antes de una pregunta y bloquear reproducción. Tras elegir, aplica las causas reparadas de la elección a A y las recomendadas a B, manteniendo el reloj. La próxima pregunta empieza desde el estado dejado por el usuario; esta comparación por decisión se explica en pantalla para no confundirla con una secuencia recomendada acumulativa.
+
+### Repaso guiado desde un error anterior
+Se reconstruye el estado inmediatamente anterior a una decisión guardada, conservando las reparaciones ya hechas. Ambos bancos parten de ese mismo estado, se pausan y después contrastan elección y recomendación con el reloj común. No se generan nuevas geometrías ni se confunde el repaso conocido con un examen sorpresa.

@@ -1,3 +1,4 @@
+import {createGuidedHistory,guidedInterventions,targetedGuidedRepair} from './repair-guided-history.mjs';
 import {createGuidedRepair,guidedScore,guidedChoose,guidedHint,guidedNext} from './repair-guided.mjs';
 import {sequenceSnapshot,renderSequence} from './repair-sequence.mjs';
 import {createRepairExamArchive,repairExamMastery} from './repair-exam-history.mjs';
@@ -10,16 +11,16 @@ import {createEnergySpacing} from './energy-spacing.mjs';
 import {faultCatalog,energyFaultScore} from './energy-faults.mjs';
 let storage;try{storage=localStorage;}catch{}
 const results=createEnergyResults(storage),history=createRepairHistory(storage,results.all()),spacing=createRepairSpacing(storage),general=createEnergySpacing(storage),key='mecanica.repair-exam.v1';
-const archive=createRepairExamArchive(storage);let inspected=null,retry=null,guided=null;const shown=()=>inspected||exam;
+const archive=createRepairExamArchive(storage);const guidedHistory=createGuidedHistory(storage);let inspected=null,retry=null,guided=null;const shown=()=>inspected||exam;
 let exam=null,selected=0,ready=false,reviewIds=[],reviewStep=null,sequence=null,warning='';
 try{const saved=JSON.parse(storage.getItem(key)||'null');if(validRepairExam(saved))exam=saved;}catch{warning='No se pudo recuperar el examen anterior.';}
 const host=document.querySelector('#repairExam'),frame=document.querySelector('#lab'),names={transformload:'Transformador',opamp:'Operacional',relief:'Hidráulica'};
 function persist(){try{storage.setItem(key,JSON.stringify(exam));}catch{warning='Este examen solo se conserva durante esta sesión.';}}
 function saveResults(){if(exam?.status!=='finished')return;archive.add(exam);for(const c of exam.cases){history.save(c);results.save(c);}spacing.sync(repairSpacingRows(history.all()));general.sync(results.all());}
-function send(){if(!ready||!shown())return;const c=retry?.state||shown().cases[selected];if(guided){frame.contentWindow.postMessage({type:'energy-exam-case',faults:guided.faults,level:guided.level,repairedIds:guided.phase==='question'?guided.fixed:guided.recommendedIds,primaryRepairedIds:guided.fixed,paused:guided.phase==='question'},location.origin);return;}frame.contentWindow.postMessage({type:'energy-exam-case',faults:c.faults,level:c.level,repairedIds:sequence?sequenceSnapshot(c,sequence.index).recommendedIds:retry||shown().status==='active'?c.repairedIds:reviewIds,...(sequence?{primaryRepairedIds:sequenceSnapshot(c,sequence.index).user}:{})},location.origin);}
-function view(i,ids=[],step=null,comparison=null){sequence=comparison;reviewStep=step;selected=i;reviewIds=[...ids];frame.hidden=false;const url='index.html?id='+(retry?.state||shown().cases[i]).lab+'&exam=1';if(frame.getAttribute('src')===url)send();else{ready=false;frame.src=url;}render();}
+function send(){if(!ready)return;if(guided){frame.contentWindow.postMessage({type:'energy-exam-case',faults:guided.faults,level:guided.level,repairedIds:guided.phase==='question'?guided.fixed:guided.recommendedIds,primaryRepairedIds:guided.fixed,paused:guided.phase==='question'},location.origin);return;}if(!shown())return;const c=retry?.state||shown().cases[selected];frame.contentWindow.postMessage({type:'energy-exam-case',faults:c.faults,level:c.level,repairedIds:sequence?sequenceSnapshot(c,sequence.index).recommendedIds:retry||shown().status==='active'?c.repairedIds:reviewIds,...(sequence?{primaryRepairedIds:sequenceSnapshot(c,sequence.index).user}:{})},location.origin);}
+function view(i,ids=[],step=null,comparison=null){sequence=comparison;reviewStep=step;selected=i;reviewIds=[...ids];frame.hidden=false;const url='index.html?id='+(guided||retry?.state||shown().cases[i]).lab+'&exam=1';if(frame.getAttribute('src')===url)send();else{ready=false;frame.src=url;}render();}
 window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==frame.contentWindow)return;if(e.data?.type==='energy-exam-ready'){ready=true;send();render();}if(e.data?.type==='concept-height'&&Number.isFinite(e.data.height))frame.style.height=Math.max(700,Math.min(14000,e.data.height))+'px';});
-function render(){renderArchive();host.replaceChildren();const el=(tag,text,parent=host)=>{const n=document.createElement(tag);n.textContent=text;parent.append(n);return n;};const button=(text,fn,parent=host)=>{const b=el('button',text,parent);b.onclick=fn;return b;};
+function render(){if(guided?.done)guidedHistory.save(guided);renderArchive();renderGuidedHistory();host.replaceChildren();const el=(tag,text,parent=host)=>{const n=document.createElement(tag);n.textContent=text;parent.append(n);return n;};const button=(text,fn,parent=host)=>{const b=el('button',text,parent);b.onclick=fn;return b;};
  for(const w of [warning,history.warning(),results.warning(),spacing.warning()])if(w)el('p',w);
  if(guided){renderGuided(el,button);return;}
  if(retry){renderRetry(el,button);return;}
@@ -41,9 +42,9 @@ function render(){renderArchive();host.replaceChildren();const el=(tag,text,pare
  const link=el('a','Ver mi plan de repaso actualizado');link.href='energy-exam.html?v=repair-weekly#repairHistory';button('Nuevo examen de reparación',()=>{inspected=null;exam=createRepairExam(history.all(),Math.random,archive.all());persist();view(0);});
 }
 function renderGuided(el,button){
- const g=guided;el('h2','Reparación guiada · '+names[g.lab]);el('p','Puntuación: '+guidedScore(g)+'/100 · '+g.errors+' errores · '+g.hints+' pistas. −15 por error, −10 por pista; un orden alternativo válido no resta.');
- el('p','Cada pregunta empieza con el mismo estado en ambos bancos. A muestra tu elección y B la recomendación para ese estado. Es una práctica de sesión; no cambia notas ni resultados guardados.');
- el('h3',g.phase==='question'?'Bancos en pausa · ¿qué intervención harías ahora?':g.done?'Práctica terminada':'Compara las consecuencias');const feedback=el('p',g.feedback);feedback.setAttribute('role','status');
+ const g=guided;if(guidedHistory.warning())el('p',guidedHistory.warning());el('h2','Reparación guiada · '+names[g.lab]);el('p','Puntuación: '+guidedScore(g)+'/100 · '+g.errors+' errores · '+g.hints+' pistas. −15 por error, −10 por pista; un orden alternativo válido no resta.');
+ el('p','Cada pregunta empieza con el mismo estado en ambos bancos. A muestra tu elección y B la recomendación para ese estado. Al completar se guarda en tu historial guiado, sin cambiar las notas del examen. Un intento sin terminar se pierde al salir o recargar.');
+ if(g.reviewTarget)el('p','Repaso personalizado: retomas el estado anterior a una decisión de tu historial. Las reparaciones ya aplicadas se conservan en ambos bancos.');el('h3',g.phase==='question'?'Bancos en pausa · ¿qué intervención harías ahora?':g.done?'Práctica terminada':'Compara las consecuencias');const feedback=el('p',g.feedback);feedback.setAttribute('role','status');
  if(g.phase==='question'){
  for(const f of faultCatalog[g.lab]){const b=button(f.repair,()=>{guidedChoose(g,'repair',f.id);send();render();});b.dataset.guidedChoice=f.id;b.disabled=!ready;}
  const verify=button('Verificar todas las averías',()=>{guidedChoose(g,'verify');send();render();});verify.dataset.guidedVerify='';verify.disabled=!ready;
@@ -51,9 +52,9 @@ function renderGuided(el,button){
  }else{
  const r=g.recommendation;el('p','Recomendación: '+(r.action==='verify'?'Verificar todas las averías':faultCatalog[g.lab].find(f=>f.id===r.choice).repair)+'.');el('p',g.done?'Ambos bancos muestran ahora el sistema reparado.':'Observa las lecturas y las piezas en movimiento. La siguiente pregunta vuelve a pausar ambos bancos desde el estado que dejaste tú.');
  if(!g.done){const next=button('Siguiente decisión · pausar',()=>{guidedNext(g);send();render();});next.dataset.guidedNext='';}
- else el('p','Resolviste todas las causas y completaste la verificación. Puntuación final: '+guidedScore(g)+'/100.');
+ else el('p','Resolviste todas las causas y completaste la verificación. Puntuación final: '+guidedScore(g)+'/100. Resultado registrado en el historial guiado.');
  }
- button('Salir del modo guiado',()=>{guided=null;view(selected);});
+ button('Salir del modo guiado',()=>{guided=null;if(shown())view(shown().status==='active'?Math.max(0,shown().cases.findIndex(c=>!c.done)):selected);else{frame.hidden=true;render();}});
 }
 function renderRetry(el,button){
  const c=retry.state;el('h2','Repaso del caso · '+names[c.lab]);el('p','Mismas averías y nivel que el original. La puntuación de práctica no reemplaza la nota del examen.');el('p','Puntuación: '+energyFaultScore(c)+'/100 · −15 por error · −10 por pista');el('p',c.log.at(-1)||'Observa ambos bancos y elige una reparación.');
@@ -62,6 +63,19 @@ function renderRetry(el,button){
  const hint=button('Pedir pista (−10)',()=>act('hint'));hint.disabled=!ready||c.done;const check=button('Comprobar reparación',()=>act('verify'));check.dataset.retryVerify='';check.disabled=!ready||c.done;
  if(c.done)el('p','Práctica guardada y plan actualizado. La nota original permanece intacta.');
  button('Volver a la revisión',()=>{retry=null;view(selected);});el('p','El resultado completado se guarda en este navegador; un repaso en curso se pierde al salir o recargar.');
+}
+function renderGuidedHistory(){
+ let root=document.querySelector('#guidedHistory');if(!root){root=document.createElement('section');root.id='guidedHistory';host.before(root);}root.replaceChildren();
+ const add=(tag,text,parent=root)=>{const n=document.createElement(tag);n.textContent=text;parent.append(n);return n;};
+ add('h2','Tu progreso en reparación guiada');add('p','Hasta 100 prácticas completadas en este navegador. Las sesiones anteriores a este historial no se pueden recuperar. Las notas de examen permanecen intactas.');if(guidedHistory.warning())add('p',guidedHistory.warning());
+ const rows=guidedHistory.all();if(!rows.length){add('p','Completa una práctica con guía para descubrir qué decisiones conviene repasar.');return;}
+ const details=add('details','');add('summary','Resultados · '+rows.length+' prácticas',details);
+ for(const r of [...rows].reverse()){add('p',new Date(r.finishedAt).toLocaleString('es-CO')+' · '+names[r.lab]+' · '+({basic:'básico',combined:'combinado',intermittent:'intermitente'}[r.level])+' · '+guidedScore(r)+'/100 · '+r.errors+' errores · '+r.hints+' pistas'+(r.reviewTarget?' · Repaso personalizado':''),details);}
+ add('h3','Intervenciones que conviene practicar');add('p','Se priorizan los errores en las últimas cinco decisiones de cada intervención. Las pistas se atribuyen a la acción sugerida. El repaso parte del estado anterior a tu último error y conserva las averías originales; no es una prueba sorpresa.');
+ for(const item of guidedInterventions(rows)){
+ add('p',names[item.lab]+' · '+item.label+' · '+item.errors+'/'+item.n+' decisiones con error · '+item.hints+' pistas · '+item.recentErrors+' errores recientes.');if(item.errors)add('p',item.kinds.repeated+' reparaciones repetidas · '+item.kinds.unnecessary+' intervenciones sobre causas ausentes · '+item.kinds.premature+' verificaciones prematuras.');
+ if(item.source){const b=add('button',item.errors?'Repasar esta decisión':'Practicar de nuevo');b.dataset.guidedReview=item.lab+':'+(item.choice||'verify');b.onclick=()=>{guided=targetedGuidedRepair(item);retry=null;view(0);host.scrollIntoView({block:'start'});};}
+ }
 }
 function renderArchive(){
  let root=document.querySelector('#repairExamHistory');if(!root){root=document.createElement('section');root.id='repairExamHistory';host.before(root);}root.replaceChildren();

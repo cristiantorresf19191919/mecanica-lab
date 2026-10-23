@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {createGuidedRepair,guidedChoose,guidedNext,guidedHint} from '../dist/concepts/repair-guided.mjs';
+import {createGuidedHistory,guidedInterventions,targetedGuidedRepair} from '../dist/concepts/repair-guided-history.mjs';
+const data=new Map(),storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)},store=createGuidedHistory(storage);
+const g=createGuidedRepair({lab:'opamp',faults:['gain'],level:'basic'});store.save(g);assert.equal(store.all().length,0);
+guidedHint(g);guidedChoose(g,'repair','gain');guidedNext(g);guidedChoose(g,'repair','gain');guidedNext(g);guidedChoose(g,'verify');store.save(g);store.save(g);assert.equal(store.all().length,1);assert.equal(createGuidedHistory(storage).all().length,1);
+const stats=guidedInterventions(store.all()),item=stats.find(x=>x.choice==='gain');assert.equal(item.errors,1);assert.equal(item.hints,1);assert.equal(item.kinds.repeated,1);const practice=targetedGuidedRepair(item);assert.deepEqual(practice.fixed,['gain']);assert.equal(practice.errors,0);assert.notEqual(practice.id,g.id);assert.equal(practice.reviewTarget.sourceId,g.id);
+guidedChoose(practice,'verify');store.save(practice);assert.equal(store.all().length,2);assert.equal(store.all()[0].errors,1);
+const cloned=store.all();cloned[0].errors=100;assert.equal(store.all()[0].errors,1);
+const denied=createGuidedHistory({getItem(){throw Error();},setItem(){throw Error();}});denied.save(g);assert.equal(denied.all().length,1);assert(denied.warning());
+for(let i=0;i<102;i++)store.save({...g,id:'record'+i});assert.equal(store.all().length,100);
+console.log('PASS completed-only storage, ID dedupe, reload, immutable results, error kinds, hint attribution, targeted pre-error state, independent practice and fallback.');
