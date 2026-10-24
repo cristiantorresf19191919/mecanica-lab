@@ -200,3 +200,5 @@ Durante la evaluación se oculta la recomendación y se conserva A como referenc
 
 ### Repaso desde el historial guiado
 Se reutilizan los bancos Anatomy existentes. Cada reto recupera `before` de la decisión fallida: ambos bancos se pausan con las mismas reparaciones previas. Después A muestra la decisión del alumno y B la recomendación desde ese mismo estado, compartiendo el reloj del laboratorio. No se cambian geometrías ni modelos físicos.
+
+El examen guiado adaptativo reutiliza los modelos estables, intermitentes y combinados. La observación previa mueve ambos bancos con el reloj común; al pausar se conserva el estado para decidir. La revisión final usa los mismos snapshots y las recomendaciones originales.

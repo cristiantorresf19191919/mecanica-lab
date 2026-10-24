@@ -124,7 +124,7 @@ window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.typ
 $('#zoom').onclick=()=>{const enabled=$('.screen').classList.toggle('zoomed');$('#zoom').textContent=enabled?'Vista completa':'Zoom ×1,6';$('#zoom').setAttribute('aria-pressed',String(enabled))};
 $('#capture').onclick=()=>{if(baseline){baseline=null;$('#comparison').hidden=true;$('#capture').textContent='Comparar A/B';return}baseline={values:currentModel.metrics.map(m=>m[1]),label:cfg.a.label+' '+$('#a').value+' '+cfg.a.unit+' · '+cfg.b.label+' '+$('#b').value+' '+cfg.b.unit+' · t '+t.toFixed(2)+' s'};$('#comparison').hidden=false;$('#capture').textContent='Borrar captura A';render()};
 learning=energyLearning(id,energy3d);window.energyLearningDebug=()=>learning.debug?.();
-document.addEventListener('energy-command',e=>{if(raf)cancelAnimationFrame(raf);raf=0;playing=false;$('#a').value=e.detail.a;$('#b').value=e.detail.b;t=0;$('#speed').value='.25';playing=e.detail.play;labels();playLabel();render();start();});
+document.addEventListener('energy-command',e=>{if(raf)cancelAnimationFrame(raf);raf=0;playing=false;$('#a').value=e.detail.a;$('#b').value=e.detail.b;if(!e.detail.preserveTime)t=0;$('#speed').value='.25';playing=e.detail.play;labels();playLabel();render();start();});
 playLabel();render();
 // The physical instrument inset is built with Anatomy; plots remain explicit engineering graphs.
 if(['wave','three','power','rectify','rc','pwm','adc'].includes(cfg.type)){
