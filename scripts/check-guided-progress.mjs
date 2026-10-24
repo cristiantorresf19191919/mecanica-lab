@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {guidedProgress} from '../dist/concepts/repair-guided-progress.mjs';
+import {guidedInterventions,targetedGuidedRepair} from '../dist/concepts/repair-guided-history.mjs';
+const item={lab:'opamp',action:'repair',choice:'gain'};
+const row=(i,choice='gain',level='basic',targeted=false)=>({id:String(i),finishedAt:new Date(2026,9,i+1).toISOString(),lab:'opamp',faults:[choice],level,reviewTarget:targeted?{action:'repair',choice}:null,steps:[{action:'repair',choice,correct:true,before:[],after:[choice]},{action:'verify',correct:true,before:[choice],after:[choice]}],hintEvents:[]});
+let rows=[row(0),row(1),row(2)];let p=guidedProgress(rows,item);assert.equal(p.level,'intermittent');assert.equal(p.initial.rate,100);assert.equal(p.reviews.rate,null);assert.equal(guidedProgress([rows[0],rows[0],rows[0]],item).level,'basic');
+rows.push(row(3,'gain','intermittent',true));p=guidedProgress(rows,item);assert.equal(p.reviews.sessions,1);assert.equal(p.initial.sessions,3);
+rows.push(row(4,'rail','basic'),row(5,'rail','basic'),row(6,'rail','intermittent'));assert.equal(guidedProgress(rows,item).level,'combined');
+const target=guidedInterventions(rows).find(x=>x.choice==='gain');assert.equal(targetedGuidedRepair(target,rows).faults.length,2);
+rows.push({...row(7),hintEvents:[{action:'repair',choice:'gain'}]});assert.equal(guidedProgress(rows,item).level,'basic');
+assert.equal(guidedProgress([],item).initial.rate,null);
+console.log('PASS disjoint chart cohorts, missing evidence, session dedupe, promotion, combined prerequisites, hint downgrade and adaptive case generation.');

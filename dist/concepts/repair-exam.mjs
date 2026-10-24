@@ -1,3 +1,4 @@
+import {renderGuidedProgress} from './repair-guided-progress.mjs';
 import {createGuidedHistory,guidedInterventions,targetedGuidedRepair} from './repair-guided-history.mjs';
 import {createGuidedRepair,guidedScore,guidedChoose,guidedHint,guidedNext} from './repair-guided.mjs';
 import {sequenceSnapshot,renderSequence} from './repair-sequence.mjs';
@@ -44,7 +45,7 @@ function render(){if(guided?.done)guidedHistory.save(guided);renderArchive();ren
 function renderGuided(el,button){
  const g=guided;if(guidedHistory.warning())el('p',guidedHistory.warning());el('h2','Reparación guiada · '+names[g.lab]);el('p','Puntuación: '+guidedScore(g)+'/100 · '+g.errors+' errores · '+g.hints+' pistas. −15 por error, −10 por pista; un orden alternativo válido no resta.');
  el('p','Cada pregunta empieza con el mismo estado en ambos bancos. A muestra tu elección y B la recomendación para ese estado. Al completar se guarda en tu historial guiado, sin cambiar las notas del examen. Un intento sin terminar se pierde al salir o recargar.');
- if(g.reviewTarget)el('p','Repaso personalizado: retomas el estado anterior a una decisión de tu historial. Las reparaciones ya aplicadas se conservan en ambos bancos.');el('h3',g.phase==='question'?'Bancos en pausa · ¿qué intervención harías ahora?':g.done?'Práctica terminada':'Compara las consecuencias');const feedback=el('p',g.feedback);feedback.setAttribute('role','status');
+ if(g.reviewTarget)el('p','Repaso personalizado según tu historial. Los retos estables conservan el contexto relevante de tu decisión; los niveles superiores comienzan con las averías activas.');if(g.adaptation)el('p','Nivel '+({basic:'estable',intermittent:'intermitente',combined:'combinado'}[g.level])+': '+g.adaptation);el('h3',g.phase==='question'?'Bancos en pausa · ¿qué intervención harías ahora?':g.done?'Práctica terminada':'Compara las consecuencias');const feedback=el('p',g.feedback);feedback.setAttribute('role','status');
  if(g.phase==='question'){
  for(const f of faultCatalog[g.lab]){const b=button(f.repair,()=>{guidedChoose(g,'repair',f.id);send();render();});b.dataset.guidedChoice=f.id;b.disabled=!ready;}
  const verify=button('Verificar todas las averías',()=>{guidedChoose(g,'verify');send();render();});verify.dataset.guidedVerify='';verify.disabled=!ready;
@@ -71,10 +72,10 @@ function renderGuidedHistory(){
  const rows=guidedHistory.all();if(!rows.length){add('p','Completa una práctica con guía para descubrir qué decisiones conviene repasar.');return;}
  const details=add('details','');add('summary','Resultados · '+rows.length+' prácticas',details);
  for(const r of [...rows].reverse()){add('p',new Date(r.finishedAt).toLocaleString('es-CO')+' · '+names[r.lab]+' · '+({basic:'básico',combined:'combinado',intermittent:'intermitente'}[r.level])+' · '+guidedScore(r)+'/100 · '+r.errors+' errores · '+r.hints+' pistas'+(r.reviewTarget?' · Repaso personalizado':''),details);}
- add('h3','Intervenciones que conviene practicar');add('p','Se priorizan los errores en las últimas cinco decisiones de cada intervención. Las pistas se atribuyen a la acción sugerida. El repaso parte del estado anterior a tu último error y conserva las averías originales; no es una prueba sorpresa.');
+ renderGuidedProgress(root,rows,guidedInterventions(rows));add('h3','Intervenciones que conviene practicar');add('p','Se priorizan los errores en las últimas cinco decisiones de cada intervención. Las pistas se atribuyen a la acción sugerida. El reto ajusta causas y nivel a tu progreso: estable para reforzar, intermitente al consolidar y combinado con evidencia en ambas reparaciones y la verificación. No es una prueba sorpresa.');
  for(const item of guidedInterventions(rows)){
  add('p',names[item.lab]+' · '+item.label+' · '+item.errors+'/'+item.n+' decisiones con error · '+item.hints+' pistas · '+item.recentErrors+' errores recientes.');if(item.errors)add('p',item.kinds.repeated+' reparaciones repetidas · '+item.kinds.unnecessary+' intervenciones sobre causas ausentes · '+item.kinds.premature+' verificaciones prematuras.');
- if(item.source){const b=add('button',item.errors?'Repasar esta decisión':'Practicar de nuevo');b.dataset.guidedReview=item.lab+':'+(item.choice||'verify');b.onclick=()=>{guided=targetedGuidedRepair(item);retry=null;view(0);host.scrollIntoView({block:'start'});};}
+ if(item.source){const b=add('button',item.errors?'Repasar esta decisión':'Practicar de nuevo');b.dataset.guidedReview=item.lab+':'+(item.choice||'verify');b.onclick=()=>{guided=targetedGuidedRepair(item,rows);retry=null;view(0);host.scrollIntoView({block:'start'});};}
  }
 }
 function renderArchive(){

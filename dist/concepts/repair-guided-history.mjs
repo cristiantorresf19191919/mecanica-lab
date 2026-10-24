@@ -1,3 +1,4 @@
+import {guidedProgress} from './repair-guided-progress.mjs';
 import {faultCatalog} from './energy-faults.mjs';
 import {createGuidedRepair,guidedScore} from './repair-guided.mjs';
 const validIds=(lab,ids)=>Array.isArray(ids)&&ids.every(f=>faultCatalog[lab].some(x=>x.id===f));
@@ -15,9 +16,13 @@ export function guidedInterventions(rows){
  return {...item,lab,n:samples.length,errors:errors.length,hints,recentErrors,priority:recentErrors*15+hints*3,kinds:{repeated:errors.filter(s=>s.step.kind==='repeated').length,unnecessary:errors.filter(s=>s.step.kind==='unnecessary').length,premature:errors.filter(s=>s.step.kind==='premature').length},source:errors.at(-1)||samples.at(-1)||null};
  })).filter(x=>x.n||x.hints).sort((a,b)=>b.priority-a.priority||b.errors-a.errors||a.label.localeCompare(b.label));
 }
-export function targetedGuidedRepair(item){
+export function targetedGuidedRepair(item,rows=null){
  if(!item.source)return null;
  const {row,step}=item.source,g=createGuidedRepair(row);
  g.fixed=[...step.before];g.recommendedIds=[...g.fixed];g.reviewTarget={lab:item.lab,action:item.action,choice:item.choice,sourceId:row.id};
+ if(rows){const p=guidedProgress(rows,item);g.level=p.level;g.adaptation=p.reason;
+ if(p.level==='combined'){g.faults=faultCatalog[item.lab].map(f=>f.id);g.fixed=[];}
+ else{const target=g.faults.includes(item.choice)?item.choice:g.faults[0];g.faults=[target];g.fixed=p.level==='basic'?step.before.filter(f=>f===target):[];}
+ g.recommendedIds=[...g.fixed];}
  return g;
 }

@@ -185,3 +185,6 @@ El protocolo de comparación puede pausar ambos bancos antes de una pregunta y b
 
 ### Repaso guiado desde un error anterior
 Se reconstruye el estado inmediatamente anterior a una decisión guardada, conservando las reparaciones ya hechas. Ambos bancos parten de ese mismo estado, se pausan y después contrastan elección y recomendación con el reloj común. No se generan nuevas geometrías ni se confunde el repaso conocido con un examen sorpresa.
+
+### Progreso por intervención y dificultad guiada
+Las barras usan datos reales de decisiones y denominadores explícitos. La dificultad modifica las causas y el nivel del estado guiado; las escenas Anatomy conservan el modelo físico y el reloj compartido. El estado inicial de un reto adaptativo se explica antes de responder para distinguirlo de una reproducción exacta del error antiguo.

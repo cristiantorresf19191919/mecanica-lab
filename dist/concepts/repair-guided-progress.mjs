@@ -1,0 +1,17 @@
+import {faultCatalog} from './energy-faults.mjs';
+const matches=(item,s)=>s.action===item.action&&(item.action==='verify'||s.choice===item.choice);
+export function interventionSessions(rows,item){return [...new Map(rows.map(r=>[r.id,r])).values()].filter(r=>r.lab===item.lab).sort((a,b)=>Date.parse(a.finishedAt)-Date.parse(b.finishedAt)).flatMap(r=>{const steps=r.steps.filter(s=>matches(item,s));if(!steps.length)return [];const hints=r.hintEvents.filter(s=>matches(item,s)).length;return [{row:r,total:steps.length,correct:steps.filter(s=>s.correct).length,hints,clean:steps.every(s=>s.correct)&&!hints,targeted:!!r.reviewTarget&&r.reviewTarget.action===item.action&&(item.action==='verify'||r.reviewTarget.choice===item.choice)}];});}
+const summarize=ss=>({sessions:ss.length,decisions:ss.reduce((n,s)=>n+s.total,0),rate:ss.length?Math.round(ss.reduce((n,s)=>n+s.correct,0)/ss.reduce((n,s)=>n+s.total,0)*100):null});
+export function guidedProgress(rows,item){const samples=interventionSessions(rows,item),initial=samples.filter(s=>!s.row.reviewTarget).slice(0,3),reviews=samples.filter(s=>s.targeted).slice(-3),recent=samples.slice(-3);const good=recent.length===3&&recent.every(s=>s.clean);
+ const keys=[...faultCatalog[item.lab].map(f=>({lab:item.lab,action:'repair',choice:f.id})),{lab:item.lab,action:'verify',choice:null}];
+ const advanced=good&&keys.every(k=>{const ss=interventionSessions(rows,k).slice(-3);return ss.length===3&&ss.every(s=>s.clean)&&ss.some(s=>s.row.level==='intermittent'||s.row.level==='combined');});
+ return {initial:summarize(initial),reviews:summarize(reviews),level:advanced?'combined':good?'intermittent':'basic',reason:advanced?'Ambas reparaciones y la verificación muestran consistencia y experiencia intermitente.':good?'Tres prácticas recientes sin errores ni pistas en esta intervención: prueba una intermitencia.':recent.some(s=>!s.clean)?'Errores o pistas recientes: refuerza la decisión con una causa estable.':'Faltan tres prácticas consistentes para aumentar la dificultad.'};}
+export function renderGuidedProgress(parent,rows,items){
+ const root=document.createElement('section');root.className='guided-progress';parent.append(root);const add=(tag,text,host=root)=>{const n=document.createElement(tag);n.textContent=text;host.append(n);return n;};
+ add('h3','Primeros intentos frente a repasos');add('p','Porcentaje de decisiones correctas por intervención: primeras 3 prácticas sin objetivo de repaso frente a los últimos 3 repasos dirigidos a esa intervención. Grupos separados; se muestra cuánta evidencia hay. Las pistas no alteran esta gráfica, pero sí la dificultad recomendada.');
+ for(const item of items){const p=guidedProgress(rows,item),card=add('article','');card.className='guided-progress-item';add('h4',({transformload:'Transformador',opamp:'Operacional',relief:'Hidráulica'}[item.lab])+' · '+item.label,card);
+ for(const [label,data] of [['Primeros intentos',p.initial],['Repasos',p.reviews]]){add('p',label+': '+(data.rate===null?'Sin datos':data.rate+' % · '+data.sessions+' prácticas · '+data.decisions+' decisiones'),card);if(data.rate!==null){const meter=add('meter','',card);meter.max=100;meter.value=data.rate;meter.setAttribute('aria-label',label+': '+data.rate+' %');}}
+ add('p','Próximo reto: '+({basic:'estable',intermittent:'intermitente',combined:'combinado'}[p.level])+'. '+p.reason,card);
+ }
+ add('p','La comparación puede incluir distintos niveles y contextos; un repaso conocido no equivale a una evaluación independiente. No demuestra dominio por sí sola.');
+}
