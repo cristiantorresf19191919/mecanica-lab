@@ -205,3 +205,7 @@ El examen guiado adaptativo reutiliza los modelos estables, intermitentes y comb
 
 ### Secuencia completa de decisiones guiadas
 Banco A: reparaciones acumuladas del alumno; banco B: reparaciones acumuladas de la solución didáctica. Ambos parten de las mismas averías. Cada paso alinea número de acciones, no duración real; la secuencia terminada mantiene su último estado. Se reutilizan los modelos y geometrías existentes con reloj común y pausa/reproducción sincronizadas.
+
+## Banco de mecánica de bicicletas
+`bikes/bike-3d.mjs` implementa una bicicleta completa sobre soporte con lenguaje Anatomy: tubos, ruedas radiadas, núcleos, válvulas, cassette, dientes del plato, bielas, pedales, eslabones, jaula, roldanas, cáliper y guaya. Mantiene un único bucle temporal, pausa fuera de pantalla y movimiento iniciado explícitamente; no hay animación automática. Selección por botones o pieza, acercamiento, cámara orbital y despiece espacial.
+El modelo de transmisión usa plato 32 y piñón 16/24/32. Es un modelo cinemático: sin rueda libre, sin predicción de fuerzas ni distancia de frenado. La prueba de freno delantera gira independientemente del pedaleo. El retorno de cadena omite el recorrido por roldanas y se explica en pantalla. Una cadena abierta interrumpe el arrastre trasero, pero permite girar bielas. Los fallos del taller y el estado del 3D provienen de `workshopState`, y la comprobación final exige resolver todas las causas.

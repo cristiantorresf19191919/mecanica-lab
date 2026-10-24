@@ -1,0 +1,446 @@
+[
+  {
+    "id": 1,
+    "title": "Anatomía y funcionamiento de la bicicleta",
+    "lessons": [
+      {
+        "id": "1.1",
+        "title": "Historia y evolución de las bicicletas"
+      },
+      {
+        "id": "1.2",
+        "title": "Tipos de bicicletas: MTB, ruta, urbana, gravel y eléctrica"
+      },
+      {
+        "id": "1.3",
+        "title": "Anatomía: cuadro, dirección, ruedas, transmisión y frenos"
+      },
+      {
+        "id": "1.4",
+        "title": "Cómo se transmite la fuerza desde los pedales hasta la rueda"
+      },
+      {
+        "id": "1.5",
+        "title": "Principios físicos: fricción, torque, palancas y engranajes"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Herramientas del mecánico",
+    "lessons": [
+      {
+        "id": "2.1",
+        "title": "Llaves Allen, Torx, fijas y ajustables"
+      },
+      {
+        "id": "2.2",
+        "title": "Tronchacadenas, alicates para eslabón rápido y extractores"
+      },
+      {
+        "id": "2.3",
+        "title": "Llaves dinamométricas y pares de apriete"
+      },
+      {
+        "id": "2.4",
+        "title": "Lubricantes, grasas, desengrasantes y limpiadores"
+      },
+      {
+        "id": "2.5",
+        "title": "Cómo organizar un taller y trabajar con seguridad"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Mantenimiento preventivo",
+    "lessons": [
+      {
+        "id": "3.1",
+        "title": "Inspección completa antes de montar"
+      },
+      {
+        "id": "3.2",
+        "title": "Limpieza de la bicicleta sin dañar componentes"
+      },
+      {
+        "id": "3.3",
+        "title": "Identificación de piezas desgastadas"
+      },
+      {
+        "id": "3.4",
+        "title": "Lubricación correcta de componentes"
+      },
+      {
+        "id": "3.5",
+        "title": "Calendario de mantenimiento por kilómetros y uso"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "La cadena y el sistema de transmisión",
+    "lessons": [
+      {
+        "id": "4.1",
+        "title": "Anatomía de la cadena: placas, rodillos y pasadores"
+      },
+      {
+        "id": "4.2",
+        "title": "Cómo retirar una cadena con tronchacadenas"
+      },
+      {
+        "id": "4.3",
+        "title": "Cómo instalar un pin de unión correctamente"
+      },
+      {
+        "id": "4.4",
+        "title": "Eslabones rápidos (Quick Link): instalación y compatibilidad"
+      },
+      {
+        "id": "4.5",
+        "title": "Cómo calcular la longitud de la cadena"
+      },
+      {
+        "id": "4.6",
+        "title": "Diagnóstico de ruidos, saltos y desgaste"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Frenos de zapata y sistemas mecánicos",
+    "lessons": [
+      {
+        "id": "5.1",
+        "title": "Principios físicos del frenado"
+      },
+      {
+        "id": "5.2",
+        "title": "Tipos: V-Brake, cantilever y caliper"
+      },
+      {
+        "id": "5.3",
+        "title": "Cómo funcionan las guayas, fundas y resortes"
+      },
+      {
+        "id": "5.4",
+        "title": "Ajuste de tensión, centrado y separación"
+      },
+      {
+        "id": "5.5",
+        "title": "Sustitución de zapatas y cables"
+      },
+      {
+        "id": "5.6",
+        "title": "Diagnóstico de frenos flojos, bloqueados o ruidosos"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Frenos de disco mecánicos e hidráulicos",
+    "lessons": [
+      {
+        "id": "6.1",
+        "title": "Rotor, cáliper, pistones y pastillas"
+      },
+      {
+        "id": "6.2",
+        "title": "Diferencias entre frenos mecánicos e hidráulicos"
+      },
+      {
+        "id": "6.3",
+        "title": "Cómo centrar un cáliper"
+      },
+      {
+        "id": "6.4",
+        "title": "Cómo eliminar rozamientos y chirridos"
+      },
+      {
+        "id": "6.5",
+        "title": "Sustitución de pastillas y rotores"
+      },
+      {
+        "id": "6.6",
+        "title": "Fundamentos del purgado hidráulico"
+      },
+      {
+        "id": "6.7",
+        "title": "Pruebas de seguridad y asentamiento de pastillas"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Llantas, neumáticos y pinchazos",
+    "lessons": [
+      {
+        "id": "7.1",
+        "title": "Estructura de rines, cubiertas y cámaras"
+      },
+      {
+        "id": "7.2",
+        "title": "Tipos de válvulas: Presta y Schrader"
+      },
+      {
+        "id": "7.3",
+        "title": "Cómo desmontar e instalar una llanta"
+      },
+      {
+        "id": "7.4",
+        "title": "Reparación de pinchazos y cambio de cámara"
+      },
+      {
+        "id": "7.5",
+        "title": "Sistemas tubeless, sellantes y válvulas"
+      },
+      {
+        "id": "7.6",
+        "title": "Presión correcta según el peso, terreno y neumático"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "title": "Cambios y desviadores",
+    "lessons": [
+      {
+        "id": "8.1",
+        "title": "Funcionamiento de los cambios de velocidad"
+      },
+      {
+        "id": "8.2",
+        "title": "Desviador delantero y trasero"
+      },
+      {
+        "id": "8.3",
+        "title": "Tornillos H, L y ajuste B"
+      },
+      {
+        "id": "8.4",
+        "title": "Ajuste de indexación y tensión del cable"
+      },
+      {
+        "id": "8.5",
+        "title": "Diagnóstico de cambios que saltan o no entran"
+      },
+      {
+        "id": "8.6",
+        "title": "Patilla del cambio y alineación"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "title": "Ruedas, radios y bujes",
+    "lessons": [
+      {
+        "id": "9.1",
+        "title": "Estructura de una rueda y distribución de cargas"
+      },
+      {
+        "id": "9.2",
+        "title": "Radios, cabecillas y tensión"
+      },
+      {
+        "id": "9.3",
+        "title": "Cómo centrar una rueda desalineada"
+      },
+      {
+        "id": "9.4",
+        "title": "Rodamientos y mantenimiento de bujes"
+      },
+      {
+        "id": "9.5",
+        "title": "Ejes pasantes y cierres rápidos"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "title": "Pedales, bielas y eje de centro",
+    "lessons": [
+      {
+        "id": "10.1",
+        "title": "Funcionamiento del sistema de pedaleo"
+      },
+      {
+        "id": "10.2",
+        "title": "Roscas y sentidos de apriete de los pedales"
+      },
+      {
+        "id": "10.3",
+        "title": "Desmontaje de bielas y platos"
+      },
+      {
+        "id": "10.4",
+        "title": "Tipos de ejes de centro y compatibilidad"
+      },
+      {
+        "id": "10.5",
+        "title": "Diagnóstico de crujidos y juego mecánico"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "title": "Dirección, manubrio y geometría",
+    "lessons": [
+      {
+        "id": "11.1",
+        "title": "Potencia, manubrio y sistema de dirección"
+      },
+      {
+        "id": "11.2",
+        "title": "Rodamientos del juego de dirección"
+      },
+      {
+        "id": "11.3",
+        "title": "Cómo eliminar holguras"
+      },
+      {
+        "id": "11.4",
+        "title": "Alineación del manubrio y la rueda"
+      },
+      {
+        "id": "11.5",
+        "title": "Ajustes ergonómicos de sillín y postura"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "title": "Suspensión y amortiguación",
+    "lessons": [
+      {
+        "id": "12.1",
+        "title": "Horquillas rígidas y de suspensión"
+      },
+      {
+        "id": "12.2",
+        "title": "Suspensión de aire y resorte"
+      },
+      {
+        "id": "12.3",
+        "title": "SAG, compresión y rebote"
+      },
+      {
+        "id": "12.4",
+        "title": "Mantenimiento externo de horquillas"
+      },
+      {
+        "id": "12.5",
+        "title": "Diagnóstico de fugas, bloqueos y ruidos"
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "title": "Diagnóstico avanzado de fallas",
+    "lessons": [
+      {
+        "id": "13.1",
+        "title": "Metodología de diagnóstico por síntomas"
+      },
+      {
+        "id": "13.2",
+        "title": "Ruidos: chasquidos, rechinidos y crujidos"
+      },
+      {
+        "id": "13.3",
+        "title": "Vibraciones, fricción y pérdida de eficiencia"
+      },
+      {
+        "id": "13.4",
+        "title": "Fallas simultáneas de transmisión y frenado"
+      },
+      {
+        "id": "13.5",
+        "title": "Inspección de daños estructurales"
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "title": "Compatibilidad y sustitución de componentes",
+    "lessons": [
+      {
+        "id": "14.1",
+        "title": "Estándares de transmisión y velocidades"
+      },
+      {
+        "id": "14.2",
+        "title": "Compatibilidad de cadenas, cassettes y desviadores"
+      },
+      {
+        "id": "14.3",
+        "title": "Medidas y estándares de ruedas y ejes"
+      },
+      {
+        "id": "14.4",
+        "title": "Sistemas de montaje de frenos y rotores"
+      },
+      {
+        "id": "14.5",
+        "title": "Interpretación de manuales técnicos y especificaciones"
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "title": "Introducción a bicicletas eléctricas",
+    "lessons": [
+      {
+        "id": "15.1",
+        "title": "Arquitectura general de las e-bikes"
+      },
+      {
+        "id": "15.2",
+        "title": "Motores de buje y motores centrales"
+      },
+      {
+        "id": "15.3",
+        "title": "Sensores, controlador y asistencia al pedaleo"
+      },
+      {
+        "id": "15.4",
+        "title": "Inspección externa y seguridad de baterías"
+      },
+      {
+        "id": "15.5",
+        "title": "Diagnóstico básico y cuándo acudir a servicio especializado"
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "title": "Taller profesional y proyecto final",
+    "lessons": [
+      {
+        "id": "16.1",
+        "title": "Procedimiento de recepción e inspección"
+      },
+      {
+        "id": "16.2",
+        "title": "Elaboración de diagnósticos y presupuestos"
+      },
+      {
+        "id": "16.3",
+        "title": "Gestión de herramientas y repuestos"
+      },
+      {
+        "id": "16.4",
+        "title": "Control de calidad de una reparación"
+      },
+      {
+        "id": "16.5",
+        "title": "Mantenimiento integral de una bicicleta"
+      },
+      {
+        "id": "16.6",
+        "title": "Evaluación práctica final"
+      }
+    ]
+  }
+]
