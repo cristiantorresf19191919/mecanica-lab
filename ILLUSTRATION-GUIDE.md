@@ -188,3 +188,6 @@ Se reconstruye el estado inmediatamente anterior a una decisión guardada, conse
 
 ### Progreso por intervención y dificultad guiada
 Las barras usan datos reales de decisiones y denominadores explícitos. La dificultad modifica las causas y el nivel del estado guiado; las escenas Anatomy conservan el modelo físico y el reloj compartido. El estado inicial de un reto adaptativo se explica antes de responder para distinguirlo de una reproducción exacta del error antiguo.
+
+### Calendario guiado por intervención
+Las tarjetas del calendario abren el mismo modo guiado con contexto adaptativo; antes de decidir ambos bancos permanecen pausados. El calendario no modifica el modelo físico ni las notas: solo selecciona la intervención y actualiza vencimientos al completar la práctica.

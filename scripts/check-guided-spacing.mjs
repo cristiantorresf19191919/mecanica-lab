@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {createGuidedSpacing,guidedSpacingRows,guidedSpacingPlan,startSpacedGuided} from '../dist/concepts/guided-spacing.mjs';
+const data=new Map(),storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)},s=createGuidedSpacing(storage);
+const row=(id,date,bad=false)=>({id,finishedAt:date+'T12:00:00',lab:'opamp',steps:[{action:'repair',choice:'gain',correct:true},{action:'verify',correct:!bad}],hintEvents:[]});
+s.setGoal(1,'2026-10-01');const sync=rs=>s.sync(guidedSpacingRows(rs));sync([row('a','2026-10-01')]);sync([row('a','2026-10-01')]);assert.equal(s.snapshot().days['2026-10-01'].count,1);assert.equal(s.schedule().length,9);
+sync([row('b','2026-10-02',true)]);assert.equal(s.snapshot().faults['opamp:gain'].due,'2026-10-05');assert.equal(s.snapshot().faults['opamp:verify'].due,'2026-10-03');sync([row('c','2026-10-03')]);assert.equal(s.snapshot().faults['opamp:gain'].due,'2026-10-05');assert.equal(s.streak('2026-10-03').current,3);
+sync([{...row('d','2026-10-05'),hintEvents:[{action:'repair',choice:'gain'}]}]);assert.equal(s.snapshot().faults['opamp:gain'].due,'2026-10-06');
+s.setGoal(3,'2026-10-05');assert.equal(s.snapshot().days['2026-10-01'].goal,1);assert.deepEqual(createGuidedSpacing(storage).snapshot(),s.snapshot());assert(!data.has('mecanica.energy-spacing.v1'));
+const p=guidedSpacingPlan([]);assert.equal(p.length,9);const g=startSpacedGuided(p.find(x=>x.lab==='opamp'&&x.fault==='verify'),[]);assert.equal(g.reviewTarget.action,'verify');assert.equal(g.level,'basic');
+console.log('PASS intervention-specific intervals, verification attribution, early-review deadline, single daily count, streak, goals, persistence and cold-start challenges.');
