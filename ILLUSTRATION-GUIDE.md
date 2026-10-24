@@ -191,3 +191,6 @@ Las barras usan datos reales de decisiones y denominadores explícitos. La dific
 
 ### Calendario guiado por intervención
 Las tarjetas del calendario abren el mismo modo guiado con contexto adaptativo; antes de decidir ambos bancos permanecen pausados. El calendario no modifica el modelo físico ni las notas: solo selecciona la intervención y actualiza vencimientos al completar la práctica.
+
+### Plan semanal del modo guiado
+Las tarjetas semanales usan la misma función de inicio del calendario para conservar contexto adaptativo, pausa previa y comparación entre elección y recomendación. Los dos bancos siguen compartiendo tiempo y modelo; el informe únicamente selecciona y organiza las prácticas.

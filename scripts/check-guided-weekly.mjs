@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {guidedWeekly} from '../dist/concepts/guided-weekly.mjs';
+import {createGuidedSpacing,guidedSpacingRows} from '../dist/concepts/guided-spacing.mjs';
+const store=createGuidedSpacing({getItem:()=>null,setItem(){}});store.setGoal(1,'2026-10-24');
+const row=(id,date,errors)=>({id,finishedAt:date+'T12:00:00',lab:'opamp',level:'basic',faults:['gain'],errors,hints:0,hintEvents:[],steps:[{action:'verify',correct:!errors},{action:'repair',choice:'gain',correct:true}]});
+const rows=[row('old','2026-10-18',2),row('new','2026-10-24',1)];store.sync(guidedSpacingRows(rows));const r=guidedWeekly(rows,store,'2026-10-24');
+assert.equal(r.current.mean,85);assert.equal(r.previous.mean,70);assert.equal(r.current.count,1);assert.equal(r.goalsMet,1);assert.equal(r.streak.current,1);assert.equal(r.difficult[0].fault,'verify');assert.equal(r.next,'2026-10-26');
+assert(r.dates.every(d=>d.items.length<=1));const all=[...r.dates.flatMap(d=>d.items),...r.backlog];assert.equal(all.length,9);assert.equal(new Set(all.map(i=>i.lab+':'+i.fault)).size,9);assert.equal(r.backlog.length,2);assert(all.every(i=>i.level&&i.reason));
+store.setGoal(2,'2026-10-24');assert.equal(guidedWeekly(rows,store,'2026-10-24').backlog.length,0);
+assert.equal(guidedWeekly([],store,'2027-01-03').next,'2027-01-04');
+console.log('PASS actual guided scores, weekly attribution, goals/streak, next-week boundaries, capacity-aware plan, visible overflow and adaptive metadata.');

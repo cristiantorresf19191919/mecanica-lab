@@ -1,3 +1,4 @@
+import {renderGuidedWeekly} from './guided-weekly.mjs';
 import {createGuidedSpacing,guidedSpacingRows,guidedSpacingPlan,startSpacedGuided} from './guided-spacing.mjs';
 import {renderEnergyCalendar} from './energy-calendar-ui.mjs';
 import {renderGuidedProgress} from './repair-guided-progress.mjs';
@@ -71,7 +72,7 @@ function renderGuidedHistory(){
  let root=document.querySelector('#guidedHistory');if(!root){root=document.createElement('section');root.id='guidedHistory';host.before(root);}root.replaceChildren();
  const add=(tag,text,parent=root)=>{const n=document.createElement(tag);n.textContent=text;parent.append(n);return n;};
  add('h2','Tu progreso en reparación guiada');add('p','Hasta 100 prácticas completadas en este navegador. Las sesiones anteriores a este historial no se pueden recuperar. Las notas de examen permanecen intactas.');if(guidedHistory.warning())add('p',guidedHistory.warning());
- const rows=guidedHistory.all();guidedSpacing.sync(guidedSpacingRows(rows));renderEnergyCalendar(root,{store:guidedSpacing,rows:[],plan:guidedSpacingPlan(rows),kind:'guided',onGoalChange:render,begin:item=>{guided=startSpacedGuided(item,rows);retry=null;view(0);host.scrollIntoView({block:'start'});}});if(!rows.length){add('p','Completa una práctica con guía para descubrir qué decisiones conviene repasar.');return;}
+ const rows=guidedHistory.all();guidedSpacing.sync(guidedSpacingRows(rows));renderGuidedWeekly(root,{rows,store:guidedSpacing,begin:item=>{guided=startSpacedGuided(item,rows);retry=null;view(0);host.scrollIntoView({block:'start'});}});renderEnergyCalendar(root,{store:guidedSpacing,rows:[],plan:guidedSpacingPlan(rows),kind:'guided',onGoalChange:render,begin:item=>{guided=startSpacedGuided(item,rows);retry=null;view(0);host.scrollIntoView({block:'start'});}});if(!rows.length){add('p','Completa una práctica con guía para descubrir qué decisiones conviene repasar.');return;}
  const details=add('details','');add('summary','Resultados · '+rows.length+' prácticas',details);
  for(const r of [...rows].reverse()){add('p',new Date(r.finishedAt).toLocaleString('es-CO')+' · '+names[r.lab]+' · '+({basic:'básico',combined:'combinado',intermittent:'intermitente'}[r.level])+' · '+guidedScore(r)+'/100 · '+r.errors+' errores · '+r.hints+' pistas'+(r.reviewTarget?' · Repaso personalizado':''),details);}
  renderGuidedProgress(root,rows,guidedInterventions(rows));add('h3','Intervenciones que conviene practicar');add('p','Se priorizan los errores en las últimas cinco decisiones de cada intervención. Las pistas se atribuyen a la acción sugerida. El reto ajusta causas y nivel a tu progreso: estable para reforzar, intermitente al consolidar y combinado con evidencia en ambas reparaciones y la verificación. No es una prueba sorpresa.');
