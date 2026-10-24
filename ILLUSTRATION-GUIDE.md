@@ -197,3 +197,6 @@ Las tarjetas semanales usan la misma función de inicio del calendario para cons
 
 ### Examen de decisiones guiadas
 Durante la evaluación se oculta la recomendación y se conserva A como referencia normal. La revisión final usa las instantáneas de cada decisión para presentar elección y recomendación desde un estado previo común. Los dos bancos reutilizan geometría y modelo Anatomy, pausados antes de decidir y sincronizados durante la observación.
+
+### Repaso desde el historial guiado
+Se reutilizan los bancos Anatomy existentes. Cada reto recupera `before` de la decisión fallida: ambos bancos se pausan con las mismas reparaciones previas. Después A muestra la decisión del alumno y B la recomendación desde ese mismo estado, compartiendo el reloj del laboratorio. No se cambian geometrías ni modelos físicos.
