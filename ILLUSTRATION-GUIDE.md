@@ -194,3 +194,6 @@ Las tarjetas del calendario abren el mismo modo guiado con contexto adaptativo; 
 
 ### Plan semanal del modo guiado
 Las tarjetas semanales usan la misma función de inicio del calendario para conservar contexto adaptativo, pausa previa y comparación entre elección y recomendación. Los dos bancos siguen compartiendo tiempo y modelo; el informe únicamente selecciona y organiza las prácticas.
+
+### Examen de decisiones guiadas
+Durante la evaluación se oculta la recomendación y se conserva A como referencia normal. La revisión final usa las instantáneas de cada decisión para presentar elección y recomendación desde un estado previo común. Los dos bancos reutilizan geometría y modelo Anatomy, pausados antes de decidir y sincronizados durante la observación.

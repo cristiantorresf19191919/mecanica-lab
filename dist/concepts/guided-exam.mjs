@@ -1,0 +1,29 @@
+import {createGuidedExam,guidedExamAct,guidedExamScore,validGuidedExam} from './guided-exam-model.mjs';
+import {createGuidedHistory} from './repair-guided-history.mjs';
+import {createGuidedSpacing,guidedSpacingRows} from './guided-spacing.mjs';
+import {guidedScore,guidedRecommendation} from './repair-guided.mjs';
+import {faultCatalog} from './energy-faults.mjs';
+let storage;try{storage=localStorage;}catch{}
+const history=createGuidedHistory(storage),spacing=createGuidedSpacing(storage),key='mecanica.guided-exam.v1';let exam=null,index=0,ready=false,review=null,warning='';
+try{const s=JSON.parse(storage.getItem(key)||'null');if(validGuidedExam(s))exam=s;}catch{warning='No se pudo recuperar el intento anterior.';}
+const host=document.querySelector('#guidedExam'),frame=document.querySelector('#lab'),names={transformload:'Transformador',opamp:'Operacional',relief:'Hidráulica'};
+function persist(){try{storage.setItem(key,JSON.stringify(exam));}catch{warning='Este examen solo se conserva durante esta sesión.';}}
+function finish(){if(exam?.status!=='finished')return;for(const c of exam.cases)history.save(c);spacing.sync(guidedSpacingRows(history.all()));}
+function send(){if(!ready||!exam)return;const c=exam.cases[index];const message={type:'energy-exam-case',faults:c.faults,level:c.level};if(exam.status==='active'){Object.assign(message,{repairedIds:c.fixed,paused:c.phase==='question'});}else{const step=c.steps[review?.step??0],before=review?.before===true;Object.assign(message,{primaryRepairedIds:before?step.before:step.after,repairedIds:before?step.before:step.recommendedIds,paused:before});}frame.contentWindow.postMessage(message,location.origin);}
+function view(i,r=null){index=i;review=r;frame.hidden=false;const url='index.html?id='+exam.cases[i].lab+'&exam=1';if(frame.getAttribute('src')===url)send();else{ready=false;frame.src=url;}render();}
+window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==frame.contentWindow)return;if(e.data?.type==='energy-exam-ready'){ready=true;send();render();}if(e.data?.type==='concept-height'&&Number.isFinite(e.data.height))frame.style.height=Math.max(700,Math.min(14000,e.data.height))+'px';});
+const actionLabel=(c,action,choice)=>action==='verify'?'Verificar todas las averías':faultCatalog[c.lab].find(f=>f.id===choice)?.repair||'Intervención';
+function render(){host.replaceChildren();const el=(tag,text,parent=host)=>{const n=document.createElement(tag);n.textContent=text;parent.append(n);return n;};const button=(text,fn,parent=host)=>{const b=el('button',text,parent);b.onclick=fn;return b;};for(const w of [warning,history.warning(),spacing.warning()])if(w)el('p',w);
+ if(!exam){el('p','100 puntos por caso, −15 por decisión incorrecta, mínimo 0. La nota es la media de los tres casos. Se conservan los avances al recargar; el plan se actualiza solo al terminar.');button('Comenzar examen guiado',()=>{exam=createGuidedExam(history.all());persist();view(0);});return;}
+ const c=exam.cases[index];
+ if(exam.status==='active'){el('h2','Caso '+(index+1)+' / 3 · '+names[c.lab]);el('p','A: referencia normal · B: resultado de tus acciones. Las recomendaciones permanecen ocultas hasta completar los tres casos.');
+ const act=(a,f)=>{guidedExamAct(exam,index,a,f);persist();if(exam.status==='finished'){finish();view(0,{step:0,before:true});}else if(c.done)view(exam.cases.findIndex(g=>!g.done));else{send();render();}};
+ if(c.phase==='question'){el('h3','En pausa · ¿qué harías ahora?');for(const f of faultCatalog[c.lab]){const b=button(f.repair,()=>act('repair',f.id));b.dataset.examChoice=f.id;b.disabled=!ready;}const b=button('Verificar todas las averías',()=>act('verify'));b.dataset.examVerify='';b.disabled=!ready;}
+ else{el('p','Decisión registrada. Observa la respuesta del banco B. Si este caso continúa, todavía requiere intervención y verificación.');const b=button('Siguiente decisión · pausar',()=>act('next'));b.dataset.examNext='';b.disabled=!ready;}return;}
+ el('h2','Examen completado · '+guidedExamScore(exam)+'/100');el('p','Resultados guardados en tu progreso guiado. Errores por intervención, dificultad recomendada y próximos repasos actualizados.');
+ exam.cases.forEach((g,i)=>{const card=el('article','');card.className='guided-exam-case';el('h3',names[g.lab]+' · '+guidedScore(g)+'/100 · '+g.errors+' errores',card);el('p',g.adaptation,card);g.steps.forEach((s,j)=>{const rec=guidedRecommendation({...g,fixed:s.before});el('p','Decisión '+(j+1)+': '+actionLabel(g,s.action,s.choice)+' · '+(s.correct?'Correcta':'−15 puntos'),card);el('p','Recomendada: '+actionLabel(g,rec.action,rec.choice)+'.',card);const why=s.correct?'Acción útil; un orden alternativo válido no resta puntos.':s.kind==='premature'?'Verificaste antes de corregir todas las causas.':s.kind==='repeated'?'Repetiste una reparación que ya estaba aplicada.':'Interviniste una causa que no estaba presente.';el('p',why,card);const before=button('Antes de decidir',()=>view(i,{step:j,before:true}),card);before.dataset.reviewBefore=i+':'+j;const after=button('Comparar decisiones',()=>view(i,{step:j,before:false}),card);after.dataset.reviewAfter=i+':'+j;});});
+ el('h3','Revisión · '+names[c.lab]+' · decisión '+((review?.step??0)+1));el('p','A muestra tu elección; B, la recomendación desde el mismo estado previo. Antes de decidir ambos se pausan. Después, las lecturas y las piezas comparten el reloj; no se reproducen tiempos reales de intervención.');
+ const a=el('a','Abrir mi plan guiado actualizado');a.href='repair-exam.html?v=guided-weekly#guidedHistory';button('Nuevo examen guiado',()=>{exam=createGuidedExam(history.all());persist();view(0);});
+}
+if(exam){finish();view(exam.status==='active'?Math.max(0,exam.cases.findIndex(c=>!c.done)):0);}else render();
+window.guidedExamDebug=()=>({exam,index,review,ready});
