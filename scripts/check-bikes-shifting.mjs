@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';
+import {createShift,shiftAct,shiftState,shiftScore} from '../dist/bikes/shift-model.mjs';
+function solve(s){for(const [key,target]of [['h',0],['l',6],['trim',0]])while(Math.abs(s[key]-target)>.01)shiftAct(s,'adjust',key,s[key]<target?1:-1);shiftAct(s,'test','h');shiftAct(s,'test','l');for(let i=0;i<7;i++)shiftAct(s,'select',null,i);shiftAct(s,'verify');assert(s.done);}
+for(let i=0;i<6;i++){const s=createShift('surprise',()=>i/6+.01);shiftAct(s,'verify');assert(!s.done);assert.equal(s.errors,1);solve(s);assert.equal(shiftScore(s),95);assert.equal(shiftAct(s,'adjust','h',1),false);}
+const guided=createShift();solve(guided);assert.equal(shiftScore(guided),100);
+const open=createShift('surprise',()=>3/6+.01);for(let i=0;i<7;i++){shiftAct(open,'select',null,i);assert(shiftState(open).aligned);}shiftAct(open,'test','h');assert(shiftState(open).unsafe);assert.equal(open.checks.h,false);shiftAct(open,'verify');assert(!open.done);
+const cable=createShift('surprise',()=>0);shiftAct(cable,'test','h');assert(shiftState(cable).aligned);shiftAct(cable,'test','l');assert(shiftState(cable).aligned);shiftAct(cable,'select',null,3);assert(!shiftState(cable).aligned);shiftAct(cable,'adjust','h',1);assert(!shiftState(cable).aligned);assert.equal(Object.keys(cable.checks).length,0);shiftAct(cable,'hint');assert.equal(shiftAct(cable,'hint'),false);
+console.log('PASS six faults, independent indexing and limits, unsafe overtravel, full sweep requirement, invalidation after adjustment, hints/scoring and terminal guard');
