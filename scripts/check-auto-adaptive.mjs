@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';
+import {progressByTest,difficulty,choiceOptions,canHint} from '../dist/autos/adaptive.mjs';
+import {createGuide,chooseTest,guideHint} from '../dist/autos/guided.mjs';
+import {createCase,ignition} from '../dist/autos/model.mjs';
+const make=(i,review,correct=true,hints=0)=>({id:String(i),date:'2026-10-'+String(i+1).padStart(2,'0'),status:'complete',reviewOf:review?'base':null,reviewTest:review?'battery':null,hints,log:[{choice:'battery',correct}]});
+const rows=[make(1,false,false),make(2,false),make(3,true),make(4,true),make(5,true)];const chart=progressByTest(rows);assert.equal(chart[0].first.percent,50);assert.equal(chart[0].first.n,2);assert.equal(chart[0].review.percent,100);assert.equal(chart[1].first.percent,null);assert.equal(difficulty([], 'battery').level,'support');assert.equal(difficulty(rows.slice(0,3),'battery').level,'independent');assert.equal(difficulty(rows,'battery').level,'challenge');assert.equal(difficulty([...rows,make(6,true,false)],'battery').level,'support');assert.equal(difficulty([...rows,make(6,true,true,1)],'battery').level,'support');assert.equal(difficulty(rows,'fuel').level,'support');
+for(const level of ['support','independent','challenge']){const options=choiceOptions({level},['spark','fuel','compression']);assert(options.includes('spark')&&options.includes('fuel')&&options.includes('compression'));assert(options.length>3);}
+const s=createCase();s.fault='battery';ignition(s,'crank');const g=createGuide();g.level='challenge';assert(!canHint(g));guideHint(s,g);assert.equal(s.hints,0);chooseTest(s,g,'charge');assert(canHint(g));guideHint(s,g);assert.equal(s.hints,1);assert(!canHint(g));assert.equal(g.level,'challenge');
+console.log('PASS chart cohorts and denominators, missing data, promotion/demotion, evidence scope, useful alternatives and challenge hint gate');

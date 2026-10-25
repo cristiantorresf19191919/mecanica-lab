@@ -235,3 +235,6 @@ La guía reutiliza los bancos de referencia/caso sin cambiar sus modelos ni geom
 
 ### Repasos personales del diagnóstico guiado
 Los retos reutilizan la misma comparación Anatomy: el caso recupera el contexto anterior a la decisión y la referencia elimina la avería bajo la misma llave. Las pruebas ya realizadas se listan para que el alumno conozca la evidencia previa; no se preejecuta la prueba que debe elegir. Ambos bancos quedan pausados al inicio. La nota comienza de nuevo y el historial original queda intacto. No se generan geometrías o animaciones alternativas para representar el repaso.
+
+### Ayudas adaptativas sobre los bancos automotrices
+Los niveles cambian orientación, opciones y acceso a pistas, nunca el estado mecánico ni la velocidad relativa de los motores. Cada repaso conserva su contexto, pausa inicial y reloj compartido sano/caso. La gráfica usa decisiones reales guardadas, con denominadores y estados sin datos; la información del nivel queda junto al reto para explicar qué ayuda recibe el alumno.
