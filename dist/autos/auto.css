@@ -3,3 +3,5 @@
 .banks.comparing #electricCard{grid-column:1/-1}.banks.comparing #caseCard{border:2px solid #a77b45}.measurement-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}.measurement-pair>div{padding:15px;background:var(--panel);border:1px solid var(--line)}#comparisonPanel{padding:20px 0;border-bottom:1px solid var(--line)}#healthyStatus,#pairStatus{font:14px/1.7 monospace}#electricCard .viewport{max-width:760px;margin:auto}@media(max-width:800px){.measurement-pair{grid-template-columns:1fr}}
 
 #guidedPanel{background:var(--panel);border:1px solid var(--line);border-left:4px solid #8a633a;padding:22px;margin:22px 0}#guidedPanel .test-buttons{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}#guidedFeedback{font-weight:bold}#guidedLog{font-size:14px}
+
+#guidedHistory{border-top:1px solid var(--line);margin-top:40px;padding-top:20px}#guidedStats table{width:100%;border-collapse:collapse;font-size:14px}#guidedStats th,#guidedStats td{text-align:left;padding:9px;border-bottom:1px solid var(--line)}#guidedArchive details{border-bottom:1px solid var(--line);padding:12px 0}#guidedReviews button{max-width:340px;text-align:left}

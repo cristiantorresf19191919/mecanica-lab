@@ -232,3 +232,6 @@ Se instancia la misma geometría de motor para referencia y caso; los cambios no
 
 ### Decidir antes de medir en automoción
 La guía reutiliza los bancos de referencia/caso sin cambiar sus modelos ni geometría. Antes de responder se pausa la reproducción y se bloquea el cursor manual; el ángulo conservado no se altera para sugerir una respuesta. Tras una elección útil, las lecturas comparativas proceden de las mismas condiciones de llave que los bancos. La siguiente pregunta vuelve a pausar; cámara, corte y despiece siguen disponibles para inspección. Los títulos que nombran la próxima prueba se ocultan hasta elegirla. Las diferencias observables de giro/encendido permanecen como evidencia, no como nombre revelado de la avería.
+
+### Repasos personales del diagnóstico guiado
+Los retos reutilizan la misma comparación Anatomy: el caso recupera el contexto anterior a la decisión y la referencia elimina la avería bajo la misma llave. Las pruebas ya realizadas se listan para que el alumno conozca la evidencia previa; no se preejecuta la prueba que debe elegir. Ambos bancos quedan pausados al inicio. La nota comienza de nuevo y el historial original queda intacto. No se generan geometrías o animaciones alternativas para representar el repaso.
