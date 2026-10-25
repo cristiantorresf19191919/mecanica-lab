@@ -1,0 +1,32 @@
+import * as T from 'three';
+import {OrbitControls} from '../vendor/OrbitControls.js';
+import {buildMachine} from '../machines/geometry.mjs';
+import {engineState} from '../machines/model.mjs';
+function electric(scene){
+ const root=new T.Group();scene.add(root);const groups={},rotors=[],dots=[];
+ const group=(id,x,y,z)=>{const g=new T.Group();g.position.set(x,y,z);root.add(g);groups[id]=g;return g;};
+ const mesh=(geo,color,g,p)=>{const o=new T.Mesh(geo,new T.MeshStandardMaterial({color,metalness:.45,roughness:.45}));o.position.set(...p);g.add(o);return o;};
+ const box=(g,p,size,c=0x7e9486)=>mesh(new T.BoxGeometry(...size),c,g,p);
+ const cyl=(g,p,r,h,c=0xb9c6b0)=>{const o=mesh(new T.CylinderGeometry(r,r,h,32),c,g,p);return o;};
+ const wire=(g,pts,c)=>{const curve=new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(...p)));mesh(new T.TubeGeometry(curve,40,.035,8,false),c,g,[0,0,0]);return curve;};
+ const base=group('base',0,0,0);box(base,[0,0,0],[8,.18,4],0x344d44);for(const x of [-3.5,3.5])for(const z of [-1.5,1.5])cyl(base,[x,-.2,z],.15,.3,0x263a30);for(let x=-3;x<=3;x++)cyl(base,[x,.12,-1.8],.045,.04);
+ const battery=group('battery',-2.7,.12,0);box(battery,[0,.65,0],[1.3,1.2,1],0x344d44);box(battery,[0,1.28,0],[1.4,.1,1.1]);for(let i=0;i<6;i++)cyl(battery,[-.48+i*.19,1.36,0],.06,.06);for(const [x,c]of [[-.45,0xb77c50],[.45,0xbac8b2]]){cyl(battery,[x,1.45,.3],.08,.22,c);box(battery,[x,1.42,.3],[.22,.06,.22],c);}
+ const starter=group('starter',0,.8,.65);const shell=cyl(starter,[0,0,0],.45,1.5);shell.rotation.z=Math.PI/2;for(const x of [-.8,.8]){const cap=cyl(starter,[x,0,0],.48,.1,0x344d44);cap.rotation.z=Math.PI/2;for(let j=0;j<4;j++){const a=j*Math.PI/2;cyl(starter,[x,.38*Math.cos(a),.38*Math.sin(a)],.04,.08);}}
+ const rotor=new T.Group();starter.add(rotor);for(let j=0;j<8;j++){const a=j*Math.PI/4;box(rotor,[-.5,.32*Math.cos(a),.32*Math.sin(a)],[.3,.08,.08],0xb58a57);}rotors.push(rotor);const shaft=cyl(rotor,[.1,0,0],.1,2.2);shaft.rotation.z=Math.PI/2;
+ const pinion=new T.Group();starter.add(pinion);const hub=cyl(pinion,[1.05,0,0],.25,.22,0xb58a57);hub.rotation.z=Math.PI/2;for(let j=0;j<12;j++){const a=j*Math.PI/6;const t=box(pinion,[1.05,.26*Math.cos(a),.26*Math.sin(a)],[.22,.1,.1]);t.rotation.x=a;}
+ const relay=group('relay',-.2,1.4,.65);const sol=cyl(relay,[0,0,0],.19,.65,0xb58a57);sol.rotation.z=Math.PI/2;for(const x of [-.35,.35])cyl(relay,[x,.2,0],.05,.12);
+ const alternator=group('alternator',2.7,.8,-.4);const alt=cyl(alternator,[0,0,0],.65,.9);alt.rotation.z=Math.PI/2;for(let i=0;i<8;i++)box(alternator,[-.35+i*.1,.65,0],[.035,.12,.65],0x344d44);for(const x of [-.5,.5])box(alternator,[x,-.5,0],[.2,.5,.9]);const ar=new T.Group();alternator.add(ar);const pulley=cyl(ar,[-.6,0,0],.48,.15,0x344d44);pulley.rotation.z=Math.PI/2;for(let j=0;j<6;j++){const a=j*Math.PI/3;const winding=cyl(alternator,[.55,.4*Math.cos(a),.4*Math.sin(a)],.1,.25,0xb58a57);winding.rotation.z=Math.PI/2;box(ar,[-.7,.3*Math.cos(a),.3*Math.sin(a)],[.05,.12,.18]);}rotors.push(ar);
+ const diodes=group('diodes',2.7,.2,-1.4);box(diodes,[0,0,0],[1.2,.1,.4]);for(let j=0;j<6;j++)cyl(diodes,[-.5+j*.2,.08,0],.055,.09,0x344d44);
+ const ground=group('ground',0,0,0);wire(ground,[[-2.25,1.57,.3],[-2.1,.25,1.4],[0,.25,1.4],[.7,.8,.65]],0x344d44);
+ const power=group('power',0,0,0);const path=wire(power,[[-3.15,1.57,.3],[-3.4,.4,1.6],[-1.3,.4,1.6],[-.55,1.6,.65]],0xb58a57);
+ wire(power,[[.15,1.6,.65],[.4,1.1,.65],[.8,.8,.65]],0xb58a57);wire(power,[[3.2,.8,-.4],[3.5,.3,-1.5],[-3.5,.3,-1.5],[-3.15,1.57,.3]],0xb58a57);
+ for(let j=0;j<10;j++)dots.push(mesh(new T.SphereGeometry(.045,8,8),0xd3ed81,power,[0,0,0]));
+ const cover=[shell,alt];let selected='',apart=false;
+ return {select(id){selected=id;for(const [key,g]of Object.entries(groups))g.traverse(o=>{if(o.isMesh)o.material.emissive.setHex(key===id?0x385b21:0);});},cut(v){cover.forEach(o=>{o.material.transparent=v;o.material.opacity=v?.22:1;o.material.depthWrite=!v;});},explode(v){apart=v;alternator.position.z=v?-1.2:-.4;diodes.position.z=v?-2:-1.4;},update(v,angle){rotor.rotation.x=v.cranks?angle*3:0;ar.rotation.x=v.running?angle*2:0;pinion.position.x=v.command?.15:0;pinion.rotation.x=v.cranks?angle*3:0;dots.forEach((o,i)=>{o.visible=v.cranks;o.position.copy(path.getPoint((angle*.03+i/10)%1));});},count:()=>{let n=0;root.traverse(o=>{if(o.isMesh)n++;});return n;}};
+}
+export function mountBench(host,kind){let renderer;try{renderer=new T.WebGLRenderer({antialias:true});}catch{host.textContent='Vista 3D no disponible. Las lecciones, mediciones y pruebas siguen funcionando.';return {draw(){},select(){},cut(){},explode(){},reset(){}};}
+ renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));host.append(renderer.domElement);const scene=new T.Scene();scene.background=new T.Color(0xe8ecdf);scene.add(new T.HemisphereLight(0xffffff,0x73816c,3));const light=new T.DirectionalLight(0xffefd3,3);light.position.set(4,8,6);scene.add(light);const camera=new T.PerspectiveCamera(38,1,.1,100),controls=new OrbitControls(camera,renderer.domElement);controls.minDistance=4;controls.maxDistance=24;const machine=kind==='engine'?buildMachine('engine',scene):electric(scene);let apart=false,lastFrame=null;
+ function render(){renderer.render(scene,camera);}function reset(){const ratio=host.clientWidth/Math.max(1,host.clientHeight),scale=Math.max(1,1.2/ratio);camera.position.set((kind==='engine'?6:7)*scale,(kind==='engine'?5:6)*scale,9*scale);controls.target.set(0,kind==='engine'?2.4:.8,0);controls.update();render();}
+ controls.addEventListener('change',render);new ResizeObserver(()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();reset();}).observe(host);
+ const api={draw(v,u){lastFrame={v,u};if(kind==='engine'){const m=engineState(u);machine.update({...m,spark:v.spark,combustion:v.combustion},apart?1:0,u);}else machine.update(v,u*Math.PI*4);render();},select(id){machine.select(id);render();},cut(value){if(kind==='engine')machine.setCut(value);else machine.cut(value);render();},explode(value){apart=value;if(kind!=='engine')machine.explode(value);if(lastFrame)api.draw(lastFrame.v,lastFrame.u);},reset,debug:()=>({kind,parts:kind==='engine'?machine.partCount:machine.count(),frame:lastFrame,apart})};api.cut(true);reset();return api;
+}

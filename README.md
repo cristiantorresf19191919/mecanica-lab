@@ -319,3 +319,10 @@ Validación: `node scripts/check-bikes-shift-replay.mjs` y navegador móvil/escr
 
 ### Comparación de guaya sana y registrada
 En el caso intermitente, dos bancos Anatomy comparten la maniobra del cursor. La referencia elimina únicamente la fricción, conservando tensor, topes, B y patilla. La referencia se guarda dentro del snapshot para que una reparación posterior no cambie la comparación histórica. Resaltado ámbar y explicación de tres pasos distinguen subida, retorno, fases libres y efectos enmascarados por topes. Controles de acercamiento y despiece actúan en ambos bancos; el giro permanece pausado. En móvil los bancos se apilan. Validación: `node scripts/check-bikes-cable-comparison.mjs`.
+
+## Curso automotriz: motor, arranque/carga y no-arranca
+`autos/index.html` ofrece tres bloques de seis lecciones cada uno, preguntas con explicación y progreso local (`mecanica.autos.v1`). Reutiliza el motor Anatomy de `machines/geometry.mjs` y añade un banco eléctrico 3D con batería, conexiones, solenoide, arranque, alternador y rectificador. Corte, despiece, selección y cursor de 720° acompañan el contenido. La vista manual es una maqueta; el giro de reproducción responde al estado diagnosticado, reducido visualmente.
+
+Siete causas de caso único: descarga de batería, masa resistiva, mando abierto, ausencia de chispa, ausencia de combustible, baja compresión y falta de carga. Los pools dependen del bloque. Pruebas condicionadas a intento de arranque o motor en marcha, hipótesis respaldada, reparación simulada y repetición de pruebas antes de verificar. Pista única y errores restan 10 puntos, mínimo 0. Guarda hasta 30 resultados; el caso incompleto no se persiste. Datos del banco son didácticos; no equivalen a especificaciones para vehículos reales. Se enlazan referencias DENSO/HELLA. No se cubre alta tensión, sistemas híbridos ni diagnóstico exhaustivo de todos los motores.
+
+Validación: `node scripts/check-autos.mjs`, `node scripts/check-course.mjs`, `node scripts/check-machines.mjs` y QA de navegador a 1280/390 px (resolver caso, progreso, giro, cursor, despiece, ausencia de desbordamiento, fallback sin WebGL).
