@@ -238,3 +238,6 @@ Los retos reutilizan la misma comparación Anatomy: el caso recupera el contexto
 
 ### Ayudas adaptativas sobre los bancos automotrices
 Los niveles cambian orientación, opciones y acceso a pistas, nunca el estado mecánico ni la velocidad relativa de los motores. Cada repaso conserva su contexto, pausa inicial y reloj compartido sano/caso. La gráfica usa decisiones reales guardadas, con denominadores y estados sin datos; la información del nivel queda junto al reto para explicar qué ayuda recibe el alumno.
+
+### Calendario de repasos automotrices
+Una tarjeta del calendario abre el mismo repaso personal: caso y referencia sana comparten llave, reloj visual, cámara, selección, corte y pausa previa. El vencimiento solo selecciona qué contexto practicar; no modifica la física ni revela la causa antes de decidir. Finalizar la guía actualiza actividad/calendario; mirar una animación o abrir el reto no cuenta como repaso completo.
