@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {newRepair,intervene,captureRepair,verifyRepair} from '../dist/learn/workshop-repair-model.mjs';
+import {required,sampleTimes} from '../dist/learn/workshop-model.mjs';
+import {validRepair,archiveRepair,loadRepairHistory,repairStrengths,repairHistoryKey} from '../dist/learn/workshop-repair-history.mjs';
+const map=new Map(),storage={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};
+const attempt=(id,hints=0)=>{const r={...newRepair({kind:'mechanics',fault:'combined'}),id,hints};intervene(r,'primary');intervene(r,'alternate');for(const id of required[r.kind])for(const time of sampleTimes(r))captureRepair(r,id,time);verifyRepair(r);return r;};
+const first=attempt('first',4);assert.ok(validRepair(first));archiveRepair(storage,first);archiveRepair(storage,first);assert.equal(loadRepairHistory(storage).length,1);
+const latest=attempt('latest');archiveRepair(storage,latest);let stats=repairStrengths(loadRepairHistory(storage));assert.equal(stats[0].first,80);assert.equal(stats[0].latest,100);assert.equal(stats[0].mean,90);assert.equal(stats[0].count,2);
+assert.equal(archiveRepair(storage,{...latest,id:'incomplete',verified:false}),false);assert.equal(validRepair({...latest,fixed:[]}),false);assert.equal(validRepair({...latest,hints:-1}),false);assert.equal(validRepair({...latest,actions:[null]}),false);assert.equal(validRepair({...latest,readings:[null]}),false);
+for(let i=0;i<105;i++)archiveRepair(storage,attempt('n'+i));assert.equal(loadRepairHistory(storage).length,100);
+latest.finished=new Date().toISOString();map.set(repairHistoryKey,JSON.stringify([null,{},latest,latest]));assert.equal(loadRepairHistory(storage).length,1);
+console.log('PASS verified-only history, idempotent saving, score comparison, validation, deduplication and 100-result cap');

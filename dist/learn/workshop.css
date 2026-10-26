@@ -9,3 +9,6 @@
 .repair-challenge button {margin:.3rem .4rem .3rem 0;white-space:normal;max-width:100%;}
 .repair-challenge strong {display:block;font-size:1.25rem;color:#284b39;}
 .repair-challenge [role=status]:not(:empty) {padding:.8rem;border:1px solid #96a784;background:#fafbf4;}
+.repair-progress-card {padding:1rem 0;border-bottom:1px solid #c5ceb9;}
+.repair-progress-card label {display:inline-flex;flex-direction:column;gap:.35rem;margin:0 1rem .6rem 0;}
+.repair-progress-card meter {width:min(15rem,65vw);height:1.1rem;accent-color:#607b40;}
