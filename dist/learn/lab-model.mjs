@@ -1,0 +1,2 @@
+export function signalModel(kind,a,b,t=0){const angle=2*Math.PI*50*t,input=a*Math.sin(angle);if(kind==='dc')return {current:a/b,power:a*a/b};if(kind==='opamp')return {input,output:Math.max(-12,Math.min(12,a*b*Math.sin(angle))),gain:b,clipped:a*b>12};return {rms:a/Math.SQRT2,period:1000/b,lineRms:a/Math.SQRT2*Math.sqrt(3),rippleFrequency:b*2};}
+export function waveValue(kind,a,b,x,phase=0){if(kind==='opamp')return Math.max(-12,Math.min(12,a*b*Math.sin(2*Math.PI*50*x)));const input=a*Math.sin(2*Math.PI*b*x+phase);return kind==='rectifier'?Math.abs(input):input;}

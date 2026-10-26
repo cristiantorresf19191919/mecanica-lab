@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';
+import {tracks} from '../dist/learn/content.mjs';
+import {ui} from '../dist/learn/i18n.mjs';
+import {signalModel,waveValue} from '../dist/learn/lab-model.mjs';
+import {pressState,pneumaticState} from '../dist/machines/model.mjs';
+assert.equal(tracks.length,4);assert.equal(tracks.flatMap(t=>t.lessons).length,20);const ids=new Set();for(const t of tracks){for(const lang of ['en','es'])assert.ok(t.name[lang]&&t.intro[lang]);for(const l of t.lessons){assert.ok(!ids.has(l.id));ids.add(l.id);for(const key of ['title','goal','body','example','practice','mistake','question','feedback'])for(const lang of ['en','es'])assert.ok(typeof l[key][lang]==='string'&&l[key][lang].length>5,t.id+'/'+l.id+'/'+key+'/'+lang);assert.equal(l.answers.length,3);assert.ok(l.correct>=0&&l.correct<3);for(const a of l.answers)assert.ok(a.en&&a.es);}}
+assert.deepEqual(Object.keys(ui.es).sort(),Object.keys(ui.en).sort());assert.equal(signalModel('dc',12,1000).current,.012);assert.equal(signalModel('dc',12,1000).power,.144);assert.equal(signalModel('sine',10,50).period,20);assert.equal(signalModel('opamp',3,5,.005).output,12);assert.ok(signalModel('opamp',3,5).clipped);assert.equal(signalModel('rectifier',10,60).rippleFrequency,120);for(let i=0;i<100;i++){const x=i/100;const sum=[0,-2*Math.PI/3,-4*Math.PI/3].reduce((s,p)=>s+waveValue('threephase',10,50,x,p),0);assert.ok(Math.abs(sum)<1e-10);assert.ok(waveValue('rectifier',10,50,x)>=0);}
+const h=pressState(.3,20,4);assert.equal(h.outputForce,80);assert.ok(Math.abs(h.inputMM-h.outputMM*4)<1e-9);const p=pneumaticState(.1,4,40);assert.ok(Math.abs(p.forceAdvance-502.6548)<.001);assert.ok(Math.abs(p.forceReturn/p.forceAdvance-.75)<1e-12);
+console.log('PASS 20 bilingual lessons, stable IDs, translation parity, assessments, Ohm, AC period, phase balance, clipping, rectification, hydraulic volume and pneumatic forces');
