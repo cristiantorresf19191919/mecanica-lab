@@ -241,3 +241,5 @@ Los niveles cambian orientación, opciones y acceso a pistas, nunca el estado me
 
 ### Calendario de repasos automotrices
 Una tarjeta del calendario abre el mismo repaso personal: caso y referencia sana comparten llave, reloj visual, cámara, selección, corte y pausa previa. El vencimiento solo selecciona qué contexto practicar; no modifica la física ni revela la causa antes de decidir. Finalizar la guía actualiza actividad/calendario; mirar una animación o abrir el reto no cuenta como repaso completo.
+
+Automotive weekly review reuses the Anatomy healthy/faulted engines and existing shared-time/camera guided-review path. Weekly plan buttons restore the exact recorded measurement context; no new physical model or illustrative geometry. Browser QA covers desktop/mobile, local-data fixtures, shared initial angle, paused review and completion updates.

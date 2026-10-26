@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {weekStart,weeklyReview} from '../dist/autos/weekly.mjs';
+const before={fault:'battery',block:'diagnosis',key:'crank',started:false,measured:[]};
+const row=(id,day,correct=true)=>({id,date:day+'T12:00:00',status:'complete',score:correct?100:90,reviewOf:'base',reviewTest:'battery',hints:0,hintLog:[],log:[{choice:'battery',correct,before}]});
+assert.equal(weekStart('2026-10-25'),'2026-10-19');assert.equal(weekStart('2027-01-01'),'2026-12-28');
+let w=weeklyReview([],'2026-10-25');assert.equal(w.current.average,null);assert.equal(w.days.length,7);assert.equal(w.days.flatMap(d=>d.items).length,0);
+const r=row('one','2026-10-21',false),partial={...row('partial','2026-10-21',false),status:'partial'};
+w=weeklyReview([row('old','2026-10-14'),r,r,partial,row('future','2026-10-24')],'2026-10-21',1);
+assert.equal(w.current.completed,1);assert.equal(w.previous.completed,1);assert.equal(w.current.average,90);assert.equal(w.weak[0].wrong,2);assert.equal(w.streak,1);assert.equal(w.days[0].day,'2026-10-26');assert.equal(w.days[0].items[0].target.before,before);assert.equal(w.days.flatMap(d=>d.items).length,1);
+w=weeklyReview([row('a','2026-10-24'),row('b','2026-10-25')],'2026-10-25');assert.equal(w.streak,2);assert.equal(w.days.find(d=>d.items.length).day,'2026-10-28');
+console.log('PASS weekly boundaries, comparable periods, partial records, duplicates, future exclusion, streak, exact review context and due dates');
