@@ -1,3 +1,4 @@
+import {mountWeekly} from './workshop-weekly-ui.mjs';
 import {goalKey,dayKey,addDays,reviewSchedule,practiceActivity} from './workshop-review.mjs';
 const p=(es,en)=>({es,en});
 export function mountReviews(api){
@@ -5,7 +6,8 @@ export function mountReviews(api){
  let selected=dayKey(),month=selected.slice(0,7),goal=2,error=false,showAll=false;
  try{const n=Number(localStorage.getItem(goalKey));if(Number.isInteger(n)&&n>=1&&n<=10)goal=n;}catch{}
  const el=(tag,text,host)=>{const n=document.createElement(tag);n.textContent=text;host.append(n);return n;},t=x=>x[api.lang()];
- function render(){const now=new Date(),today=dayKey(now),rows=api.results(),schedule=reviewSchedule(rows,now),activity=practiceActivity(rows,now);root.replaceChildren();
+ const weekly=mountWeekly({...api,before:root,goal:()=>goal});
+ function render(){const now=new Date(),today=dayKey(now),rows=api.results(),schedule=reviewSchedule(rows,now),activity=practiceActivity(rows,now);root.replaceChildren();weekly.render();
  el('h2',t(p('Tu calendario de repasos','Your review calendar')),root);
  el('p',t(p('Repasos de mediciones y diagnósticos: 1, 3, 7, 14 y 30 días tras días de práctica correctos con hasta una pista. Un error o dos pistas devuelve el intervalo a 1 día. Repetir el mismo día no alarga el intervalo.','Measurement and diagnosis reviews: 1, 3, 7, 14 and 30 days after successful practice days using at most one hint. An error or two hints resets the interval to 1 day. Repeating on the same day does not lengthen it.')),root);
  const metrics=el('div','',root);metrics.className='review-metrics';el('strong',t(p('Hoy: ','Today: '))+activity.today+'/'+goal,metrics);el('strong',t(p('Racha: ','Streak: '))+activity.streak+' '+t(p('días','days')),metrics);

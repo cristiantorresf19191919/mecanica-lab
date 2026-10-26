@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {weekStart,weeklySummary,nextWeekPlan} from '../dist/learn/workshop-weekly.mjs';
+const now=new Date('2026-10-29T12:00:00');
+const row=(date,id,good=true)=>({id,kind:'mechanics',fault:'primary',date:new Date(date+'T12:00:00').toISOString(),score:good?100:50,hints:0,wrongDiagnosis:good?0:2,readings:[{id:'ground',correct:good},{id:'battery',correct:true}]});
+const rows=[row('2026-10-19','prior'),row('2026-10-23','outside'),row('2026-10-26','a',false),row('2026-10-28','b'),{...row('2026-10-29','c'),review:'mechanics:measurement:ground'},row('2026-10-30','future')];
+const s=weeklySummary([...rows,rows[2]],now);assert.equal(s.start,'2026-10-26');assert.equal(s.priorEnd,'2026-10-22');assert.equal(s.current.count,3);assert.equal(s.previous.count,1);assert.equal(s.current.score,250/3);assert.equal(s.current.reviews,1);assert.equal(s.streak,2);assert.equal(s.measurements[0].id,'ground');assert.equal(s.measurements[0].errors,1);assert.equal(s.diagnoses[0].errors,1);assert.equal(s.diagnoses[0].total,3);
+const empty=weeklySummary([],now);assert.equal(empty.current.score,null);assert.equal(empty.current.accuracy,null);assert.deepEqual(empty.measurements,[]);
+assert.equal(weekStart('2027-01-03'),'2026-12-28');assert.equal(weekStart('2027-01-04'),'2027-01-04');
+const plan=nextWeekPlan(rows.filter(r=>r.id!=='future'),1,now);assert.equal(plan.start,'2026-11-02');assert.equal(plan.end,'2026-11-08');assert.equal(plan.days.length,7);assert.ok(plan.days.every(d=>d.entries.length<=1&&d.entries.every(e=>e.due<=d.day)));const keys=plan.days.flatMap(d=>d.entries.map(e=>e.key));assert.equal(new Set(keys).size,keys.length);assert.ok(plan.days[0].entries[0].seen>0);assert.ok(plan.backlog>0);assert.ok(nextWeekPlan([],3,now).scheduled>nextWeekPlan([],1,now).scheduled);
+console.log('PASS local week/year boundaries, matched weekdays, no-data states, duplicate/future exclusion, error denominators, streak, prioritized plan capacity and unique due targets');
