@@ -36,3 +36,9 @@
 .guided-exam-scores{width:100%;border-collapse:collapse;margin:1rem 0;font-variant-numeric:tabular-nums}
 .guided-exam-scores caption{text-align:left;margin-bottom:.75rem}
 .guided-exam-scores th,.guided-exam-scores td{text-align:left;padding:.65rem;border-bottom:1px solid #b9c4ac}
+.sequence-coach{margin:1rem 0;padding:1rem;border:1px solid #9dac91;background:#f7f6ee}
+.sequence-coach li{padding:.75rem;margin:.5rem 0;border-left:4px solid #637f51}
+.sequence-coach .sequence-repeated,.sequence-coach .sequence-unrelated{border-color:#a35c2c;background:#f7ecdf}
+.sequence-coach [aria-current="step"]{outline:2px solid #254e3d;outline-offset:2px}
+.sequence-coach [aria-pressed="true"]{background:#254e3d;color:white}
+.sequence-difference{background:#f7e8cc}
