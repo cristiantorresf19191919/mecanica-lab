@@ -1,3 +1,4 @@
+import {mountRepairWeekly} from './workshop-repair-weekly-ui.mjs';
 import {mountRepairReviews} from './workshop-repair-review-ui.mjs';
 import {repairDraftKey,validRepair,loadRepairHistory,archiveRepair,repairStrengths} from './workshop-repair-history.mjs';
 import {newRepair,repairState,repairScore,intervene,captureRepair,verifyRepair,causes} from './workshop-repair-model.mjs';
@@ -18,11 +19,12 @@ export function mountRepair({language,current,changed,measure,reading}){
  function refresh(){persist();changed();}
  const faultName=r=>{const primary={mechanics:'ground',electronics:'clipping',hydraulics:'leak',pneumatics:'restriction'},a=local(caseInfo[r.kind].options[primary[r.kind]]),b=local(alternate[r.kind].label);return (r.fault.startsWith('intermittent-')?t('Intermitente: ','Intermittent: '):'')+(r.fault==='combined'?a+' + '+b:r.fault.endsWith('alternate')?b:a);};
  function launch(g){active=key();sessions.set(active,fresh(g));message='';measure(.5);refresh();root.scrollIntoView({block:'start'});}
- const reviews=mountRepairReviews({language,host:archive,faultName,launch,available:()=>Boolean(current()?.finished)});
+ const reviews=mountRepairReviews({language,host:archive,faultName,launch,onGoalChange:()=>weekly.render(),available:()=>Boolean(current()?.finished)});
+ const weekly=mountRepairWeekly({language,host:archive,faultName,launch,available:()=>Boolean(current()?.finished)});
  function history(){archive.replaceChildren();const put=(tag,text,host=archive)=>{const n=document.createElement(tag);n.textContent=text;host.append(n);return n;};
  put('h2',t('Historial de reparaciones','Repair history'));put('p',t('Últimas 100 reparaciones verificadas en este navegador. La nota del examen permanece intacta. Las comparaciones agrupan el mismo taller y configuración de fallo; los casos combinados no atribuyen el error a una sola causa.','Latest 100 verified repairs in this browser. Exam grades stay unchanged. Comparisons group the same workshop and fault configuration; combined cases do not attribute an error to a single cause.'));
  let rows=[];try{rows=loadRepairHistory(localStorage);}catch{saveError=true;}
- reviews.render(rows);
+ reviews.render(rows);weekly.render(rows);
  if(saveError){put('p',t('No se pudo leer o guardar el historial. La sesión sigue en memoria.','History could not be read or saved. Your session remains in memory.')).setAttribute('role','status');const retry=put('button',t('Reintentar guardar','Retry saving'));retry.onclick=refresh;}
  if(!rows.length){put('p',t('Completa y verifica una reparación para comenzar tu historial.','Complete and verify a repair to start your history.'));return;}
 

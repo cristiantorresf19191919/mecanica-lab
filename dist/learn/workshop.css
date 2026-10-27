@@ -19,3 +19,8 @@
 .repair-calendar-grid .outside-month {opacity:.55;}
 #repairCalendar progress {accent-color:#496741;margin:0 1rem 1rem 0;}
 @media(max-width:500px){.repair-calendar-grid {gap:.15rem;}.repair-calendar-grid button {font-size:.65rem;}}
+.repair-weekly-metrics {display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;}
+.repair-weekly-metrics article {padding:1rem;border:1px solid #becbb4;}
+.repair-weekly-metrics strong {font-size:1.8rem;color:#244a38;}
+.repair-weekly-plan {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1rem;}
+.repair-weekly-plan article {padding:1rem;border:1px solid #becbb4;}

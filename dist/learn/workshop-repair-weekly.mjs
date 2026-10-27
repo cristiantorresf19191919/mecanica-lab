@@ -1,0 +1,12 @@
+import {validRepair,repairStrengths} from './workshop-repair-history.mjs';
+import {repairScore} from './workshop-repair-model.mjs';
+import {repairDay,shiftDay,repairReviews} from './workshop-repair-review.mjs';
+export const repairWeekStart=day=>shiftDay(day,-((new Date(day+'T12:00:00Z').getUTCDay()+6)%7));
+function usable(rows,now){const seen=new Set();return rows.filter(r=>{if(!validRepair(r)||!r.verified||!Number.isFinite(Date.parse(r.finished))||Date.parse(r.finished)>now.getTime()||seen.has(r.id))return false;seen.add(r.id);return true;}).sort((a,b)=>Date.parse(a.finished)-Date.parse(b.finished));}
+function stats(rows){return {count:rows.length,average:rows.length?Math.round(rows.reduce((n,r)=>n+repairScore(r),0)/rows.length):null,days:new Set(rows.map(r=>repairDay(new Date(r.finished)))).size,hints:rows.reduce((n,r)=>n+r.hints,0),unnecessary:rows.reduce((n,r)=>n+r.actions.filter(a=>!a.useful).length,0),failedChecks:rows.reduce((n,r)=>n+r.failedChecks,0)};}
+export function repairWeekly(rows,goal=2,now=new Date()){
+ const today=repairDay(now),start=repairWeekStart(today),priorStart=shiftDay(start,-7),priorEnd=shiftDay(today,-7),clean=usable(rows,now),inRange=(a,b)=>clean.filter(r=>{const day=repairDay(new Date(r.finished));return day>=a&&day<=b;}),currentRows=inRange(start,today),current=stats(currentRows),previous=stats(inRange(priorStart,priorEnd)),review=repairReviews(clean,now),strengths=repairStrengths(clean);
+ const hardest=repairStrengths(currentRows).filter(g=>g.mean<100).slice(0,3),planStart=shiftDay(start,7),planEnd=shiftDay(planStart,6),capacity=Math.max(1,Math.min(5,Math.floor(Number(goal)||2)));let remaining=review.entries;const days=[];
+ for(let i=0;i<7;i++){const day=shiftDay(planStart,i);const entries=remaining.filter(e=>e.due<=day).map(e=>({...e,mean:strengths.find(g=>g.key===e.key)?.mean??100})).sort((a,b)=>a.mean-b.mean||a.due.localeCompare(b.due)||a.key.localeCompare(b.key)).slice(0,capacity);days.push({day,entries});const keys=new Set(entries.map(e=>e.key));remaining=remaining.filter(e=>!keys.has(e.key));}
+ return {today,start,end:shiftDay(start,6),priorStart,priorEnd,current,previous,delta:current.average===null||previous.average===null?null:current.average-previous.average,streak:review.streak,hardest,plan:{start:planStart,end:planEnd,days,capacity,scheduled:days.reduce((n,d)=>n+d.entries.length,0),backlog:remaining.filter(e=>e.due<=planEnd).length}};
+}
