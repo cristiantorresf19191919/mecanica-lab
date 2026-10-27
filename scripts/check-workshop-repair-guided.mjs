@@ -1,0 +1,7 @@
+import assert from 'node:assert/strict';
+import {newRepair} from '../dist/learn/workshop-repair-model.mjs';
+import {newGuidedRepair,guidedScore,guidedRemaining,guidedHint,chooseGuidedRepair,nextGuidedRepair} from '../dist/learn/workshop-repair-guided.mjs';
+import {required,faultModes} from '../dist/learn/workshop-model.mjs';
+for(const kind of Object.keys(required))for(const fault of faultModes){const c={repair:newRepair({kind,fault})},original=JSON.stringify(c),g=newGuidedRepair(c);assert.equal(nextGuidedRepair(g),false);while(g.phase!=='complete'){const id=guidedRemaining(g).at(-1);assert.ok(chooseGuidedRepair(g,id));assert.equal(g.phase,'feedback');assert.equal(chooseGuidedRepair(g,id),false);assert.ok(nextGuidedRepair(g));}assert.equal(guidedScore(g),100);assert.equal(JSON.stringify(c),original);}
+const g=newGuidedRepair({repair:newRepair({kind:'mechanics',fault:'primary'})});assert.ok(guidedHint(g));assert.equal(guidedHint(g),false);chooseGuidedRepair(g,'alternate');assert.equal(guidedScore(g),80);assert.deepEqual(g.user.fixed,[]);assert.deepEqual(g.reference.fixed,['primary']);nextGuidedRepair(g);assert.deepEqual(g.reference.fixed,[]);chooseGuidedRepair(g,'primary');nextGuidedRepair(g);assert.equal(g.phase,'complete');assert.equal(guidedScore(g),80);
+console.log('PASS all workshops/faults, valid alternative order, question/feedback gating, one hint per decision, scoring, retry reset and exam immutability');
