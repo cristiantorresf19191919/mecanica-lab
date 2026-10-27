@@ -33,3 +33,6 @@
 .intervention-chart-track .reviews{background:#266951}
 .intervention-chart p{font-size:.88rem}
 @media(max-width:650px){.intervention-chart-row{grid-template-columns:1fr;gap:5px}.intervention-chart{padding:.75rem}}
+.guided-exam-scores{width:100%;border-collapse:collapse;margin:1rem 0;font-variant-numeric:tabular-nums}
+.guided-exam-scores caption{text-align:left;margin-bottom:.75rem}
+.guided-exam-scores th,.guided-exam-scores td{text-align:left;padding:.65rem;border-bottom:1px solid #b9c4ac}
