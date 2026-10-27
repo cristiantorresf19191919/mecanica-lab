@@ -24,3 +24,12 @@
 .repair-weekly-metrics strong {font-size:1.8rem;color:#244a38;}
 .repair-weekly-plan {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1rem;}
 .repair-weekly-plan article {padding:1rem;border:1px solid #becbb4;}
+/* Paired, text-labelled accuracy bars remain readable without colour. */
+.intervention-chart{margin:1rem 0;padding:1rem;border:1px solid #c7cebd;background:#f5f5ed;border-radius:8px}
+.intervention-chart figcaption{font-weight:700;margin-bottom:1rem}
+.intervention-chart-row{display:grid;grid-template-columns:150px minmax(80px,1fr) 200px;gap:12px;align-items:center;margin:14px 0;font-variant-numeric:tabular-nums}
+.intervention-chart-track{height:22px;border:1px solid #a6af9b;background:repeating-linear-gradient(90deg,#e4e8dc 0,#e4e8dc calc(25% - 1px),#b7bfad calc(25% - 1px),#b7bfad 25%);overflow:hidden;border-radius:3px}
+.intervention-chart-track span{display:block;height:100%;background:#6b7763}
+.intervention-chart-track .reviews{background:#266951}
+.intervention-chart p{font-size:.88rem}
+@media(max-width:650px){.intervention-chart-row{grid-template-columns:1fr;gap:5px}.intervention-chart{padding:.75rem}}

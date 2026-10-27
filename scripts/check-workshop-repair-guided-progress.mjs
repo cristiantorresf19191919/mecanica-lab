@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {interventionProgress,guidedReviewPlan} from '../dist/learn/workshop-repair-guided-progress.mjs';
+const row=(fault='primary',useful=true,hint=false,focus)=>({user:{kind:'mechanics',fault},focus,rounds:[{id:'primary',useful,hint}]});
+assert.equal(interventionProgress([],'mechanics','primary').first.percent,null);
+const first=[row(),row('primary',false),row()];
+assert.equal(interventionProgress(first,'mechanics','primary').first.percent,67);
+assert.equal(guidedReviewPlan(first,'mechanics','primary').level,1);
+const clean=[row(),row(),row()];
+assert.equal(guidedReviewPlan(clean,'mechanics','primary').level,2);
+const advanced=Array.from({length:3},()=>row('combined',true,false,'primary'));
+assert.equal(guidedReviewPlan([...clean,...advanced],'mechanics','primary').level,3);
+assert.equal(guidedReviewPlan([...advanced,row('combined',true,true,'primary')],'mechanics','primary').level,1);
+assert.equal(guidedReviewPlan([{...row(),rounds:Array(20).fill({id:'primary',useful:true})}],'mechanics','primary').level,1);
+const p=interventionProgress([...first,...advanced],'mechanics','primary');
+assert.equal(p.first.percent,67);assert.equal(p.reviews.percent,100);assert.equal(p.reviews.sessions,3);
+assert.equal(guidedReviewPlan(clean,'electronics','primary').level,1);
+assert.equal(guidedReviewPlan(advanced,'mechanics','primary').fault,'intermittent-primary');
+console.log('Guided progress: separate cohorts, sample counts, promotion, regression and independent sessions passed.');
