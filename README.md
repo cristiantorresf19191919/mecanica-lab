@@ -432,3 +432,6 @@ After a completed weekly exam, choose **Repair this case** for any reviewed work
 Validation: `node scripts/check-workshop-repair.mjs` covers all four workshops, five fault configurations, both intervention orders, evidence gates and scoring.
 
 Repair-history validation: `node scripts/check-workshop-repair-history.mjs` checks verified-only persistence, duplicate prevention, score comparisons, validation and retention.
+
+### Spaced repair reviews
+The repair calendar (`#repairCalendar`) schedules each previously repaired workshop/fault combination. Clean practice days (score ≥90, at most one hint, no unnecessary actions or failed checks) advance through 1/3/7/14/30-day intervals. Any difficult attempt that day resets the interval to one day; same-day repeats never accelerate spacing. Dates use America/Bogota. A configurable 1–5 daily goal counts distinct verified fault configurations; a practice streak requires one per day and stays active until today ends. Due and overdue entries launch fresh challenges in the existing synchronized benches. Calendar calculations use the retained latest 100 repairs and update on day rollover. Goal and repair progress remain local to this browser. Run `node scripts/check-workshop-repair-review.mjs` for scheduling and activity boundary checks.

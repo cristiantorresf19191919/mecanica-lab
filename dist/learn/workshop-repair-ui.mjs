@@ -1,3 +1,4 @@
+import {mountRepairReviews} from './workshop-repair-review-ui.mjs';
 import {repairDraftKey,validRepair,loadRepairHistory,archiveRepair,repairStrengths} from './workshop-repair-history.mjs';
 import {newRepair,repairState,repairScore,intervene,captureRepair,verifyRepair,causes} from './workshop-repair-model.mjs';
 import {required,sampleTimes,snapshot} from './workshop-model.mjs';
@@ -15,17 +16,21 @@ export function mountRepair({language,current,changed,measure,reading}){
  const fresh=c=>({...newRepair(c),id:crypto.randomUUID(),started:new Date().toISOString()});
  function persist(){try{for(const r of sessions.values())if(r.verified){r.finished ||=new Date().toISOString();archiveRepair(localStorage,r);}localStorage.setItem(repairDraftKey,JSON.stringify({active,sessions:Object.fromEntries([...sessions].slice(-40))}));saveError=false;}catch{saveError=true;}}
  function refresh(){persist();changed();}
+ const faultName=r=>{const primary={mechanics:'ground',electronics:'clipping',hydraulics:'leak',pneumatics:'restriction'},a=local(caseInfo[r.kind].options[primary[r.kind]]),b=local(alternate[r.kind].label);return (r.fault.startsWith('intermittent-')?t('Intermitente: ','Intermittent: '):'')+(r.fault==='combined'?a+' + '+b:r.fault.endsWith('alternate')?b:a);};
+ function launch(g){active=key();sessions.set(active,fresh(g));message='';measure(.5);refresh();root.scrollIntoView({block:'start'});}
+ const reviews=mountRepairReviews({language,host:archive,faultName,launch,available:()=>Boolean(current()?.finished)});
  function history(){archive.replaceChildren();const put=(tag,text,host=archive)=>{const n=document.createElement(tag);n.textContent=text;host.append(n);return n;};
  put('h2',t('Historial de reparaciones','Repair history'));put('p',t('Últimas 100 reparaciones verificadas en este navegador. La nota del examen permanece intacta. Las comparaciones agrupan el mismo taller y configuración de fallo; los casos combinados no atribuyen el error a una sola causa.','Latest 100 verified repairs in this browser. Exam grades stay unchanged. Comparisons group the same workshop and fault configuration; combined cases do not attribute an error to a single cause.'));
  let rows=[];try{rows=loadRepairHistory(localStorage);}catch{saveError=true;}
+ reviews.render(rows);
  if(saveError){put('p',t('No se pudo leer o guardar el historial. La sesión sigue en memoria.','History could not be read or saved. Your session remains in memory.')).setAttribute('role','status');const retry=put('button',t('Reintentar guardar','Retry saving'));retry.onclick=refresh;}
  if(!rows.length){put('p',t('Completa y verifica una reparación para comenzar tu historial.','Complete and verify a repair to start your history.'));return;}
- const faultName=r=>{const primary={mechanics:'ground',electronics:'clipping',hydraulics:'leak',pneumatics:'restriction'},a=local(caseInfo[r.kind].options[primary[r.kind]]),b=local(alternate[r.kind].label);return (r.fault.startsWith('intermittent-')?t('Intermitente: ','Intermittent: '):'')+(r.fault==='combined'?a+' + '+b:r.fault.endsWith('alternate')?b:a);};
+
  const groups=repairStrengths(rows);put('h3',t('Qué practicar · primero lo que más cuesta','What to practise · hardest first'));put('p',t('Prioridad según la nota media de los últimos tres intentos del mismo caso. Las barras comparan tu primer intento y el más reciente. Un único resultado todavía no demuestra dominio.','Priority uses the average score of the latest three attempts at the same case. Bars compare your first and latest attempts. One result does not yet establish mastery.'));
  for(const g of groups){const card=put('article','');card.className='repair-progress-card';put('h4',local(caseInfo[g.kind].title)+' · '+faultName(g),card);put('p',g.count+' '+t(g.count===1?'intento · media reciente ':'intentos · media reciente ',g.count===1?'attempt · recent average ':'attempts · recent average ')+g.mean+'/100',card);
  for(const [name,value]of [[t('Primero','First'),g.first],[t('Último','Latest'),g.latest]]){const label=put('label',name+' '+value+'/100',card),meter=put('meter','',label);meter.min=0;meter.max=100;meter.value=value;meter.setAttribute('aria-label',name+' '+value+'/100');}
  put('p',t('Últimos tres: ','Latest three: ')+g.unnecessary+t(' intervenciones innecesarias · ',' unnecessary interventions · ')+g.hints+t(' pistas · ',' hints · ')+g.failedChecks+t(' verificaciones fallidas',' failed verifications'),card);
- const b=put('button',t('Practicar esta avería','Practise this fault'),card);b.dataset.repairPractice=g.key;b.disabled=!current()?.finished;b.onclick=()=>{active=key();sessions.set(active,fresh(g));message='';measure(.5);refresh();root.scrollIntoView({block:'start'});};}
+ const b=put('button',t('Practicar esta avería','Practise this fault'),card);b.dataset.repairPractice=g.key;b.disabled=!current()?.finished;b.onclick=()=>launch(g);}
  if(!current()?.finished)put('p',t('Termina o abre un examen completado para practicar sin interrumpir una evaluación.','Finish or open a completed exam to practise without interrupting an assessment.'));
  const details=put('details','');put('summary',t('Comparar todos mis resultados','Compare all my results'),details);for(const r of [...rows].reverse()){put('p',new Date(r.finished).toLocaleString(language())+' · '+local(caseInfo[r.kind].title)+' · '+faultName(r)+' · '+repairScore(r)+'/100',details);}
  }
