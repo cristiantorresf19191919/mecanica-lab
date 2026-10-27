@@ -1,0 +1,5 @@
+import {causes,newRepair,intervene} from './workshop-repair-model.mjs';
+import {interventionReplay} from './workshop-repair-exam-adaptive.mjs';
+export function repairRecommendation(c){const needed=causes(c.repair),recommended=[],unnecessary=[];for(const [index,a]of c.repair.actions.entries()){if(needed.includes(a.id)&&!recommended.includes(a.id))recommended.push(a.id);else unnecessary.push(index);}const missing=needed.filter(id=>!recommended.includes(id));return {recommended:[...recommended,...missing],unnecessary,missing,steps:Math.max(c.repair.actions.length,needed.length)};}
+export function recommendedReplay(c,step){const r=newRepair(c.repair);for(const id of repairRecommendation(c).recommended.slice(0,Math.max(0,step)))intervene(r,id);return r;}
+export function compareRepairStep(c,step){const plan=repairRecommendation(c),bounded=Math.max(0,Math.min(plan.steps,step));return {plan,step:bounded,user:interventionReplay(c,bounded),recommended:recommendedReplay(c,bounded),userAction:c.repair.actions[bounded-1]?.id??null,recommendedAction:plan.recommended[bounded-1]??null,unnecessary:plan.unnecessary.includes(bounded-1)};}
