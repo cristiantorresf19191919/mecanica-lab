@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {guidedReviews,readGuidedGoal,repairDay,repairMonth} from '../dist/learn/workshop-repair-guided-review.mjs';
+import {newGuidedRepair,chooseGuidedRepair,nextGuidedRepair,guidedHint} from '../dist/learn/workshop-repair-guided.mjs';
+let serial=0;
+function session(day,{hint=false,wrong=false}={}){const g={...newGuidedRepair({repair:{kind:'mechanics',fault:'primary',actions:[]}}),id:'s'+serial++,key:'exam:0',finished:day+'T17:00:00Z'};if(hint)guidedHint(g);if(wrong){chooseGuidedRepair(g,'alternate');nextGuidedRepair(g);}chooseGuidedRepair(g,'primary');nextGuidedRepair(g);return g;}
+const now=new Date('2026-10-27T18:00:00Z'),first=session('2026-10-25'),second=session('2026-10-26');
+let m=guidedReviews([first,second],now);assert.equal(m.entries[0].due,'2026-10-29');assert.equal(m.streak,2);
+const early=session('2026-10-27');m=guidedReviews([first,second,early,early],now);assert.equal(m.entries[0].due,'2026-10-29');assert.equal(m.completed,1);assert.equal(m.streak,3);
+m=guidedReviews([first,second,session('2026-10-27',{hint:true})],now);assert.equal(m.entries[0].due,'2026-10-28');assert.equal(m.entries[0].run,0);
+m=guidedReviews([session('2026-10-27',{wrong:true}),session('2026-10-27')],now);assert.equal(m.entries.find(x=>x.id==='primary').run,1);assert.equal(m.entries.find(x=>x.id==='alternate').run,0);assert.equal(m.completed,2);
+assert.equal(guidedReviews([{...early,phase:'question'}],now).completed,0);
+assert.equal(guidedReviews([session('2026-10-28')],now).entries.length,0);
+assert.equal(guidedReviews([first],now).streak,0);
+assert.equal(repairDay(new Date('2026-10-28T04:59:00Z')),'2026-10-27');
+assert.equal(repairMonth('2028-02').length,42);assert.ok(repairMonth('2028-02').includes('2028-02-29'));
+assert.equal(readGuidedGoal({getItem:()=>99}),2);assert.equal(readGuidedGoal({getItem:()=>3}),3);
+console.log('PASS spaced intervals, early reviews, hint reset, intervention-specific errors, deduplication, completion gating, streaks, Bogotá midnight and goals');
+const progression=['2026-08-01','2026-08-02','2026-08-05','2026-08-12','2026-08-26'].map(day=>session(day));
+assert.equal(guidedReviews(progression,now).entries[0].due,'2026-09-25');
+assert.equal(guidedReviews(progression,now).entries[0].overdue,true);
+const hinted=session('2026-10-27',{hint:true});
+assert.equal(guidedReviews([hinted,session('2026-10-27')],now).entries[0].run,0);
