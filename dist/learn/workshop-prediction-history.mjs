@@ -1,0 +1,3 @@
+import {loadGuidedHistory,guidedWeaknesses} from './workshop-repair-guided-history.mjs';
+export function loadPredictions(storage){return loadGuidedHistory(storage).filter(g=>g.context==='guided-exam-prediction');}
+export function predictionWeaknesses(rows){return guidedWeaknesses(rows).map(g=>{let repeated=0,unrelated=0;for(const row of rows.filter(r=>r.user.kind===g.kind)){for(const r of row.rounds.filter(r=>r.id===g.id&&!r.useful)){if(row.order.includes(r.id))repeated++;else unrelated++;}}return {...g,repeated,unrelated};}).sort((a,b)=>b.wrong-a.wrong||b.hints-a.hints||a.key.localeCompare(b.key));}

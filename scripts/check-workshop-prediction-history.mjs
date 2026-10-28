@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {loadPredictions,predictionWeaknesses} from '../dist/learn/workshop-prediction-history.mjs';
+import {newGuidedRepair,chooseGuidedRepair,nextGuidedRepair,guidedHint} from '../dist/learn/workshop-repair-guided.mjs';
+import {saveGuided,restoreGuided,loadGuidedHistory} from '../dist/learn/workshop-repair-guided-history.mjs';
+const values=new Map(),storage={getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v)};
+const g={...newGuidedRepair({repair:{kind:'mechanics',fault:'combined',actions:[]}}),id:'prediction',key:'e:0',context:'guided-exam-prediction'};
+guidedHint(g);chooseGuidedRepair(g,'primary');saveGuided(storage,g);assert.equal(loadPredictions(storage).length,0);assert.equal(restoreGuided(g).context,g.context);nextGuidedRepair(g);chooseGuidedRepair(g,'primary');nextGuidedRepair(g);chooseGuidedRepair(g,'alternate');nextGuidedRepair(g);saveGuided(storage,g);saveGuided(storage,g);
+assert.equal(loadPredictions(storage).length,1);const w=predictionWeaknesses(loadPredictions(storage));assert.equal(w[0].repeated,1);assert.equal(w[0].unrelated,0);assert.equal(w[0].hints,1);assert.equal(w[0].fault,'combined');saveGuided(storage,{...g,id:'legacy',context:undefined});assert.equal(loadPredictions(storage).length,1);assert.equal(loadGuidedHistory(storage).length,2);
+const other={...newGuidedRepair({repair:{kind:'mechanics',fault:'alternate',actions:[]}}),id:'absent',key:'e:0',context:g.context};chooseGuidedRepair(other,'primary');nextGuidedRepair(other);chooseGuidedRepair(other,'alternate');nextGuidedRepair(other);saveGuided(storage,other);assert.equal(predictionWeaknesses(loadPredictions(storage))[0].unrelated,1);
+console.log('PASS prediction provenance, partial exclusion, save deduplication, repeated/absent fault breakdown and legacy preservation');
