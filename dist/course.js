@@ -59,6 +59,7 @@ function courseRender(){
  if(figureKind!==concept){figureKind=concept;cq('#courseFigure').style.height='920px';cq('#courseFigure').src=(['fourstroke','pascal','motor','vfd','valve','cylinder','sequence'].includes(concept)?'machines/index.html?id=':'concepts/index.html?id=')+(concept==='sequence'?'sequence-dual':concept);cq('#courseFigure').title='Laboratorio: '+l[0];}
  const n=window.lessonNotes[concept];
  cq('#courseDeep').innerHTML=n?`<h4>Entender el mecanismo</h4><p>${n[0]}</p><h4>Cómo razonarlo, paso a paso</h4><ol>${n[1].split('|').map(x=>`<li>${x}</li>`).join('')}</ol><div class="misconception"><b>EL ERROR QUE DEBES EVITAR</b><p>${n[2]}</p></div>`:'';
+ const guideHost=cq('#courseDeep');const guideKey=['physics','automotive','pneumatics','fluids','electricity','electromechanics','mechatronics'][trackIndex];import('./teaching/render.mjs').then(({renderCourseGuide})=>{if(figureKind===concept)renderCourseGuide(guideHost,guideKey,'es',concept);});
  cq('#figureContext').textContent='Predice el resultado antes de tocar los controles. Cambia una variable, observa las lecturas y explica qué ley se cumple. Usa «Ampliar» para explorar el instrumento a pantalla completa.';
 
 }

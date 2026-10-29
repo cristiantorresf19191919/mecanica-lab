@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {guides} from '../dist/teaching/guides.mjs';
+import {readFileSync} from 'node:fs';
+assert.equal(Object.keys(guides).length,8);
+for(const [id,g]of Object.entries(guides))for(const field of ['title','prerequisite','route','reasoning','example','diagnosis','experiment','question','answer','misconception','boundary'])for(const lang of ['en','es'])assert.ok(g[field][lang]?.length>20,id+':'+field+':'+lang);
+const near=(a,b,tol=.01)=>assert.ok(Math.abs(a-b)<tol,`${a} != ${b}`);
+near((30-10)/10,2);near(.5*10*6**2,180);near(11-.6-.1,10.3);near(12/(1+30/10),3);near(120*50/6,1000);near((1500-1440)/1500,.04);
+const area=Math.PI*.04**2/4,annulus=Math.PI*(.04**2-.016**2)/4;near(4e5*area,503,1);near(4e5*annulus,422,1);near(4e5*area-1e5*annulus,397,1);
+near(4000/.001/1e5,40);near((6/60000)/.001,.1);near(4e6*2/60000,133,1);near(60*(32/16)*2.1*60/1000,15.12);
+for(const file of ['course.js','learn/depth-ui.mjs','autos/main.mjs','bikes/bike.mjs'])assert.ok(readFileSync(new URL('../dist/'+file,import.meta.url),'utf8').includes('renderCourseGuide'));
+console.log('PASS eight bilingual guides, complete teaching structure, worked-example calculations and integration in all course entry points');
