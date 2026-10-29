@@ -1,9 +1,11 @@
+import {renderLessonPractice} from './practice-ui.mjs';
 import {renderCourseGuide} from '../teaching/render.mjs';
 import {depth} from './depth.mjs';
 import {cases} from './cases.mjs';
 const state={};
 const add=(tag,text,host)=>{const e=document.createElement(tag);e.textContent=text;host.append(e);return e;};
 export function renderDepth(lesson,track,lang){const t=(es,en)=>lang==='es'?es:en,root=document.querySelector('#reasoning');root.replaceChildren();add('h3',t('Razonar paso a paso','Reason it through'),root);const ol=add('ol','',root);for(const step of depth[lesson.id].steps)add('li',step[lang],ol);
+ renderLessonPractice(lesson.id,lang,root);
  renderCourseGuide(root,track.id,lang,lesson.id);
  const host=document.querySelector('#workshopCase');host.hidden=lesson!==track.lessons.at(-1);if(host.hidden)return;const c=cases[track.id],s=state[track.id]||(state[track.id]={step:0,choices:{},done:false});host.replaceChildren();add('p',t('CASO DE TALLER · PRÁCTICA SIN NOTA','WORKSHOP CASE · UNGRADED PRACTICE'),host).className='eyebrow';add('h3',c.title[lang],host);const live=add('a',t('Abrir este caso en los bancos 3D →','Open this case in the 3D benches →'),host);live.href='workshop.html?case='+track.id+'&lang='+lang;add('p',c.context[lang],host);
  if(s.done){add('p',c.conclusion[lang],host).className='case-conclusion';const btn=add('button',t('Repetir el caso','Repeat case'),host);btn.onclick=()=>{state[track.id]={step:0,choices:{},done:false};renderDepth(lesson,track,lang);};return;}
