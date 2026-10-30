@@ -26,6 +26,6 @@ When the user requests a release:
 4. Publish once with `netlify deploy --prod --dir=dist --no-build`. The CLI folder link identifies the intended site; verify `netlify status` before deploying.
 5. Check the public pages, then switch back to `develop` for continued work.
 
-Manual deploys and serving traffic can still consume credits. This workflow avoids deployments on every edit; it does not make Netlify usage free. Stopping auto-publishing alone is insufficient because builds can still run. Keep builds stopped and Git deployment disconnected. Reconnecting Git can reactivate builds.
+Manual deploys and serving traffic can still consume credits. This workflow avoids deployments on every edit; it does not make Netlify usage free. Stopping auto-publishing alone is insufficient because builds can still run. This site has no Git build configuration: Git deployment is disconnected, so there are no automatic builds to stop. If Git deployment is ever connected, explicitly stop builds before routine pushes. Reconnecting Git can reactivate builds.
 
 Reference: https://docs.netlify.com/build/configure-builds/stop-or-activate-builds/
