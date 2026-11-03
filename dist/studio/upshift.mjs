@@ -1,9 +1,9 @@
 // Prescribed rolling upshift. Signed output is opposite the input across an external mesh.
 export const duration=3.2;
 const clamp=x=>Math.max(0,Math.min(1,x));
-const ramp=(t,start,end)=>clamp((t-start)/(end-start));
+export const ramp=(t,start,end)=>clamp((t-start)/(end-start));
 // Integral in rpm·seconds of a linear speed transition, including both plateaus.
-function shaft(t,start,end,initial,final){
+export function shaft(t,start,end,initial,final){
  const u=ramp(t,start,end),dt=end-start;
  return {rpm:initial+(final-initial)*u,angle:Math.PI/30*(initial*t+(final-initial)*(dt*u*u/2+Math.max(0,t-end)))};
 }

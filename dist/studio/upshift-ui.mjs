@@ -25,3 +25,5 @@ render();
 try{rig=(await import('./model.mjs')).bench($('stage'));rig.setup(5,2,{step:1});phase=-1;render()}catch{ text('stage',t('WebGL no disponible. El cursor y los tacómetros siguen activos.','WebGL unavailable. Timeline and tachometers remain active.'))}
 document.addEventListener('visibilitychange',()=>last=null);
 function frame(now){if(!document.hidden){if(playing&&last!==null){time=Math.min(duration,time+(now-last)*.001*rate);if(time===duration)playing=false}if(playing||last===null||time===duration)render();else rig?.draw(0,sample(time));last=now}requestAnimationFrame(frame)}requestAnimationFrame(frame);
+
+$('compare').href='synchro.html?lang='+l;text('compare',t('Comparar sano y desgastado →','Compare healthy and worn →'));

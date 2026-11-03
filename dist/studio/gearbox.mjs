@@ -44,17 +44,19 @@ export function gearbox({root,gear,pin,box,band,mesh,turn,T},v,s,apart){
   [x+[12,18,24,30][v-1]*.085/2,0,plane+.22],[X,.32,plane+.11+side*.2],[X,.36,z(3)+.94]
  ][s];
  const anchor=new T.Vector3(...target);
- let previousPhase=-1;
+ let previousPhase=-1,hadClash=false;
  const accents=[fly,sliders[0],rings[1],drivenWheels[1],sliders[0],plate,flange];
  function glow(part,on){part.traverse(o=>{if(o.material?.emissive)o.material.emissive.setHex(on?0x805114:0)})}
  return {anchor,pose(f){
   if(f.phase!==previousPhase){if(previousPhase>=0)glow(accents[previousPhase],false);glow(accents[f.phase],true);previousPhase=f.phase}
+  if(Boolean(f.clash)!==hadClash){hadClash=Boolean(f.clash);for(const o of [sliders[0],drivenWheels[1]])o.traverse(p=>{if(p.material?.emissive)p.material.emissive.setHex(hadClash?0xc93813:0)});if(!hadClash)glow(accents[f.phase],true)}
   fly.rotation.z=plate.rotation.z=f.engine.angle;disc.rotation.z=f.input.angle;
   plate.position.z=clutchZ-.15+.13*f.open;
   for(let i=0;i<4;i++){const n=[12,18,24,30][i];inputWheels[i].rotation.z=f.input.angle;drivenWheels[i].rotation.z=Math.PI/(48-n)-f.input.angle*n/(48-n)}
   for(const part of [...outputParts,flange])part.rotation.z=f.outputAngle;
   for(const part of sliders)part.position.z=(z(0)+z(1))/2+.11+f.sleeve;
-  if(f.phase<1)anchor.set(x,.65,clutchZ-.27);
+  if(f.clash)anchor.copy(sliders[0].position).y=.38;
+  else if(f.phase<1)anchor.set(x,.65,clutchZ-.27);
   else if(f.phase===1||f.phase===4)anchor.copy(sliders[0].position).y=.38;
   else if(f.phase===2||f.phase===3)anchor.set(X,.31,z(1)-.14);
   else if(f.phase===5)anchor.set(x,.65,clutchZ-.27);
