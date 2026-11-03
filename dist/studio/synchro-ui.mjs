@@ -1,4 +1,4 @@
-import {compare,end,contact} from './synchro-compare.mjs';
+import {compare,end,contact,manualPair} from './synchro-compare.mjs';
 const $=id=>document.getElementById(id),en=new URLSearchParams(location.search).get('lang')==='en',t=(es,eng)=>en?eng:es,num=x=>x.toLocaleString(en?'en':'es',{maximumFractionDigits:1}),set=(el,val)=>{if(el.textContent!==val)el.textContent=val};
 document.documentElement.lang=en?'en':'es';
 for(const [id,es,eng] of [
@@ -22,11 +22,27 @@ const captions=[
  ['El anillo termina de sincronizar','The ring finishes synchronizing','La segunda desgastada sigue libre mientras el cono reduce la diferencia restante.','The worn unit’s second gear remains free as cone friction closes the remaining gap.'],
  ['Ya puede entrar segunda','Second can now engage','Con rueda y cubo a 300 rpm, el manguito completa su recorrido sin choque. Después se vuelve a cerrar el embrague.','With wheel and hub both at 300 rpm, the sleeve completes its travel without clash. The clutch then re-engages.']
 ];
-function draw(){const fs=compare(time,wait);benches.forEach((b,i)=>{const f=fs[i];b.card.classList.toggle('clash',!!f.clash);set(b.state,f.clash?t('Choque','Clash'):f.locked?(f.locked===1?'1 →':'2 →'):t('Libre','Free'));set(b.gap,'Δ '+num(f.delta)+' rpm');[f.engine.rpm,f.input.rpm,f.output,f.second].forEach((v,j)=>set(b.values[j],num(Math.abs(v))+' rpm'));b.rig?.label(f.clash?t('Dientes en choque','Dog-tooth clash'):[t('Embrague','Clutch'),t('Manguito','Sleeve'),t('Anillo','Ring'),t('Rueda de segunda','Second gear'),t('Manguito','Sleeve'),t('Embrague','Clutch'),t('Salida','Output')][f.phase]);b.rig?.draw(0,f)});
+let manual=true,attempt=null;
+const finish=()=>manual?Math.max(end,(attempt??0)+.6):end;
+set($('modeLabel'),t('Modo','Mode'));set($('mode').options[0],t('Intento manual','Manual attempt'));set($('mode').options[1],t('Demostración','Demonstration'));set($('attempt'),t('Meter segunda ahora','Try second now'));set($('retry'),t('Nuevo intento','New attempt'));
+function draw(){const fs=manual?manualPair(time,attempt):compare(time,wait);
+ $('cursor').max=Math.round(finish()*1000);
+ $('attempt').disabled=time<.9||attempt!==null;
+ set($('instruction'),time<.9?t('Avanza hasta el cono (0,90 s) para intentar el acople.','Advance to cone contact (0.90 s) to try engagement.'):attempt===null?t('Pulsa durante la reproducción o elige el instante con el cursor.','Press during playback or choose the instant with the cursor.'):t('El cursor reproduce la misma decisión. Nuevo intento libera ambos manguitos.','Scrub to replay this decision. New attempt releases both sleeves.'));
+benches.forEach((b,i)=>{const f=fs[i];b.card.classList.toggle('clash',!!f.clash);set(b.state,f.clash?t('Choque','Clash'):f.locked?(f.locked===1?'1 →':'2 →'):t('Libre','Free'));set(b.gap,'Δ '+num(f.delta)+' rpm');[f.engine.rpm,f.input.rpm,f.output,f.second].forEach((v,j)=>set(b.values[j],num(Math.abs(v))+' rpm'));b.rig?.label(f.clash?t('Dientes en choque','Dog-tooth clash'):[t('Embrague','Clutch'),t('Manguito','Sleeve'),t('Anillo','Ring'),t('Rueda de segunda','Second gear'),t('Manguito','Sleeve'),t('Embrague','Clutch'),t('Salida','Output')][f.phase]);b.rig?.draw(0,f)});
  const idx=time<.4?0:time<.9?1:time<1.9?2:time<contact?3:fs[1].clash?4:time<2.9?(wait?5:6):7;
- set($('event'),captions[idx][+en]);set($('detail'),captions[idx][2+(+en)]);set($('time'),time.toLocaleString(en?'en':'es',{minimumFractionDigits:2,maximumFractionDigits:2})+' / '+num(end)+' s');$('cursor').value=Math.round(time*1000);set($('play'),running?t('Ⅱ Pausar','Ⅱ Pause'):time===end?t('↺ Repetir','↺ Replay'):t('▷ Reproducir','▷ Play'))}
+ set($('event'),captions[idx][+en]);set($('detail'),captions[idx][2+(+en)]);if(manual){set($('event'),attempt===null||time<attempt?t('Elige cuándo intentar el acople','Choose when to attempt engagement'):t('Respuesta a tu intento','Response to your attempt'));set($('detail'),t('El modelo prueba el contacto aunque quede diferencia de velocidad. Un bloqueo eficaz impediría ese intento prematuro. Si rasca, el manguito retrocede y la marcha queda libre.','This model tests tooth contact even with a speed mismatch. Effective blocking would prevent premature contact. On clash the sleeve recoils and the gear stays free.'))}
+ set($('time'),time.toLocaleString(en?'en':'es',{minimumFractionDigits:2,maximumFractionDigits:2})+' / '+num(finish())+' s');$('cursor').value=Math.round(time*1000);set($('play'),running?t('Ⅱ Pausar','Ⅱ Pause'):time>=finish()?t('↺ Repetir','↺ Replay'):t('▷ Reproducir','▷ Play'))}
 function seek(v){time=v;running=false;last=null;draw()}
-$('cursor').oninput=()=>seek(+$('cursor').value/1000);$('jump').onclick=()=>seek(contact);$('wait').onchange=()=>{wait=$('wait').checked;seek(time)};$('play').onclick=()=>{if(time===end)time=0;running=!running;last=null;draw()};draw();
+function clearAttempt(){attempt=null;set($('receipt'),'')}
+$('mode').onchange=()=>{manual=$('mode').value==='manual';clearAttempt();$('manualControls').hidden=!manual;$('wait').parentElement.hidden=manual;$('jump').hidden=manual;seek(0)};
+$('wait').parentElement.hidden=true;$('jump').hidden=true;
+$('attempt').onclick=()=>{attempt=Math.round(time*1000)/1000;time=attempt;const pair=manualPair(time,attempt);
+ const stamp=attempt.toLocaleString(locale(),{minimumFractionDigits:3,maximumFractionDigits:3});function locale(){return en?'en':'es'}
+ set($('receipt'),t('Intento a ','Attempt at ')+stamp+' s · '+pair.map((f,i)=>(i?t('Desgastado','Worn'):t('Sano','Healthy'))+': '+(f.clash?t('rasca','clash'):t('entra suave','smooth'))+' ('+num(Math.abs(f.second))+' / 300 rpm; Δ '+num(f.delta)+' rpm)').join(' · '));
+ running=true;last=null;draw()};
+$('retry').onclick=()=>{clearAttempt();seek(.9)};
+$('cursor').oninput=()=>seek(+$('cursor').value/1000);$('jump').onclick=()=>seek(contact);$('wait').onchange=()=>{wait=$('wait').checked;seek(time)};$('play').onclick=()=>{if(time>=finish())time=0;running=!running;last=null;draw()};draw();
 try{const {bench}=await import('./model.mjs');for(const b of benches){b.rig=bench(b.stage);b.rig.setup(5,2,{step:1})}}catch{for(const b of benches)if(!b.rig)b.stage.textContent=t('3D no disponible. Lecturas activas.','3D unavailable. Readings remain active.')}
 document.addEventListener('visibilitychange',()=>last=null);
-function frame(now){if(!document.hidden){if(running&&last!==null){time=Math.min(end,time+(now-last)*.001*+$('rate').value);if(time===end)running=false}draw();last=now}requestAnimationFrame(frame)}requestAnimationFrame(frame);
+function frame(now){if(!document.hidden){if(running&&last!==null){time=Math.min(finish(),time+(now-last)*.001*+$('rate').value);if(time>=finish())running=false}draw();last=now}requestAnimationFrame(frame)}requestAnimationFrame(frame);

@@ -3,7 +3,7 @@ import {names,lessons,ratio,config,observation} from './config.mjs';
 import {search} from './search.mjs';
 import {tracks} from '../learn/content.mjs';
 import {catalog} from '../concepts/catalog.mjs';
-const $=id=>document.getElementById(id),p=new URLSearchParams(location.search),en=p.get('lang')==='en',l=en?'en':'es',t=(a,b)=>en?b:a,lab=location.pathname.endsWith('lab.html'),url=(page,k)=>page+'?lang='+l+'&stage='+k;
+const $=id=>document.getElementById(id),p=new URLSearchParams(location.search),en=p.get('lang')==='en',l=en?'en':'es',t=(a,b)=>en?b:a,lab=/\/lab(?:\.html)?\/?$/.test(location.pathname),url=(page,k)=>page+'?lang='+l+'&stage='+k;
 let k=Math.min(5,Math.max(0,parseInt(p.get('stage'))||0));if(!lab&&!p.has('stage'))k=4;
 let step=0,apart=false;
 let front=false,v=0,rig=null,playing=!matchMedia('(prefers-reduced-motion: reduce)').matches,a=0,prev=0,visible=true;

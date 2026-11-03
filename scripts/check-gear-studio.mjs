@@ -24,3 +24,12 @@ assert.equal(sample(.9).delta,240);assert.equal(sample(1.4).delta,120);assert.eq
 const {compare,contact,end}=await import('../dist/studio/synchro-compare.mjs');
 const [clean,clash]=compare(contact);assert.equal(clean.locked,2);assert.equal(clean.delta,0);assert.equal(clash.locked,0);assert.equal(clash.delta,90);assert.ok(clash.clash);assert.ok(!compare(contact,true)[1].clash);
 for(let ms=1;ms<end*1000;ms++){const time=ms/1000;for(const [i,f] of compare(time).entries()){if(f.locked===2)assert.equal(f.delta,0);if(f.clash)assert.ok(f.delta>0&&!f.locked);for(const k of ['engine','input']){const angleDiff=compare(time+.00001)[i][k].angle-compare(time-.00001)[i][k].angle;assert.ok(Math.abs(angleDiff/.00002*30/Math.PI-f[k].rpm)<.01)}}}
+
+const {manualPair}=await import('../dist/studio/synchro-compare.mjs');
+for(const [instant,expected] of [[.9,[true,true]],[1.9,[false,true]],[2.15,[false,true]],[2.9,[false,false]],[3.8,[false,false]]]){
+ const states=manualPair(instant,instant);
+ assert.deepEqual(states.map(f=>f.clash),expected);
+ assert.deepEqual(manualPair(instant+.25,instant).map(f=>f.locked),expected.map(c=>c?0:2));
+ assert.ok(manualPair(instant-.001,instant).every(f=>!f.clash&&f.locked===0));
+}
+assert.equal(manualPair(2.15,2.15)[1].delta,90);
