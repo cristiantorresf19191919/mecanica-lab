@@ -1,3 +1,4 @@
+import {mountHistory} from './attempt-history.mjs';
 import {compare,end,contact,manualPair} from './synchro-compare.mjs';
 const $=id=>document.getElementById(id),en=new URLSearchParams(location.search).get('lang')==='en',t=(es,eng)=>en?eng:es,num=x=>x.toLocaleString(en?'en':'es',{maximumFractionDigits:1}),set=(el,val)=>{if(el.textContent!==val)el.textContent=val};
 document.documentElement.lang=en?'en':'es';
@@ -34,13 +35,24 @@ benches.forEach((b,i)=>{const f=fs[i];b.card.classList.toggle('clash',!!f.clash)
  set($('event'),captions[idx][+en]);set($('detail'),captions[idx][2+(+en)]);if(manual){set($('event'),attempt===null||time<attempt?t('Elige cuándo intentar el acople','Choose when to attempt engagement'):t('Respuesta a tu intento','Response to your attempt'));set($('detail'),t('El modelo prueba el contacto aunque quede diferencia de velocidad. Un bloqueo eficaz impediría ese intento prematuro. Si rasca, el manguito retrocede y la marcha queda libre.','This model tests tooth contact even with a speed mismatch. Effective blocking would prevent premature contact. On clash the sleeve recoils and the gear stays free.'))}
  set($('time'),time.toLocaleString(en?'en':'es',{minimumFractionDigits:2,maximumFractionDigits:2})+' / '+num(finish())+' s');$('cursor').value=Math.round(time*1000);set($('play'),running?t('Ⅱ Pausar','Ⅱ Pause'):time>=finish()?t('↺ Repetir','↺ Replay'):t('▷ Reproducir','▷ Play'))}
 function seek(v){time=v;running=false;last=null;draw()}
-function clearAttempt(){attempt=null;set($('receipt'),'')}
+function clearAttempt(){attempt=null;$('replaySaved').hidden=true;set($('receipt'),'')}
 $('mode').onchange=()=>{manual=$('mode').value==='manual';clearAttempt();$('manualControls').hidden=!manual;$('wait').parentElement.hidden=manual;$('jump').hidden=manual;seek(0)};
 $('wait').parentElement.hidden=true;$('jump').hidden=true;
-$('attempt').onclick=()=>{attempt=Math.round(time*1000)/1000;time=attempt;const pair=manualPair(time,attempt);
- const stamp=attempt.toLocaleString(locale(),{minimumFractionDigits:3,maximumFractionDigits:3});function locale(){return en?'en':'es'}
- set($('receipt'),t('Intento a ','Attempt at ')+stamp+' s · '+pair.map((f,i)=>(i?t('Desgastado','Worn'):t('Sano','Healthy'))+': '+(f.clash?t('rasca','clash'):t('entra suave','smooth'))+' ('+num(Math.abs(f.second))+' / 300 rpm; Δ '+num(f.delta)+' rpm)').join(' · '));
- running=true;last=null;draw()};
+set($('historyLink'),t('Mis intentos · gráfica de rpm','My attempts · RPM chart'));
+set($('replaySaved'),t('▷ Reproducir este intento','▷ Replay this attempt'));
+function receipt(r){
+ const stamp=(r.ms/1000).toLocaleString(en?'en':'es',{minimumFractionDigits:3,maximumFractionDigits:3});
+ set($('receipt'),'#'+r.id+' · '+stamp+' s · '+r.banks.map((b,i)=>(i?t('Desgastado','Worn'):t('Sano','Healthy'))+': '+(b.clash?t('rasca','clash'):t('entra suave','smooth'))+' ('+num(b.wheel)+' / '+num(b.hub)+' rpm; Δ '+num(b.delta)+' rpm)').join(' · '));
+ const clashes=r.banks.filter(b=>b.clash).length;
+ $('receipt').append(' '+(clashes===0?t('Ambas ruedas ya giraban con su cubo: los dientes pudieron entrar sin golpe.','Both wheels already matched their hubs, so the teeth could engage cleanly.'):clashes===2?t('En ambas cajas la rueda todavía adelantaba al manguito; los dientes se tocaron antes de igualar velocidades.','In both boxes the wheel still overtook the sleeve, so the teeth touched before their speeds matched.'):t('Solo el anillo sano había igualado velocidades. En el otro banco, la rueda aún adelantaba al manguito al tocar los dientes.','Only the healthy ring had matched speeds. In the other box the wheel still overtook the sleeve when the teeth met.')));
+ $('replaySaved').hidden=false;
+}
+const archive=mountHistory($('attemptHistory'),en,r=>{
+ $('mode').value='manual';$('mode').onchange();attempt=r.ms/1000;receipt(r);seek(attempt);
+ $('replaySaved').focus({preventScroll:true});$('receipt').scrollIntoView({block:'start'});
+});
+$('replaySaved').onclick=()=>{if(attempt===null)return;seek(Math.max(0,attempt-.25));running=true;last=null;draw()};
+$('attempt').onclick=()=>{attempt=Math.round(time*1000)/1000;time=attempt;receipt(archive.save(attempt));running=true;last=null;draw()};
 $('retry').onclick=()=>{clearAttempt();seek(.9)};
 $('cursor').oninput=()=>seek(+$('cursor').value/1000);$('jump').onclick=()=>seek(contact);$('wait').onchange=()=>{wait=$('wait').checked;seek(time)};$('play').onclick=()=>{if(time>=finish())time=0;running=!running;last=null;draw()};draw();
 try{const {bench}=await import('./model.mjs');for(const b of benches){b.rig=bench(b.stage);b.rig.setup(5,2,{step:1})}}catch{for(const b of benches)if(!b.rig)b.stage.textContent=t('3D no disponible. Lecturas activas.','3D unavailable. Readings remain active.')}
