@@ -15,3 +15,8 @@ for(let g=0;g<=4;g++)for(let step=0;step<steps.length;step++){
  if(g&&step===2)assert.ok(s.locked&&!s.closed);
  if(s.loaded)assert.ok(Math.abs(Math.abs(s.output)*s.torque-6)<1e-10);
 }
+
+const {sample}=await import('../dist/studio/upshift.mjs');
+for(let j=1;j<3200;j++){const t=j/1000,f=sample(t);if(f.locked===2)assert.ok(f.delta<1e-8);
+ for(const k of ['engine','input']){const w=(sample(t+.00001)[k].angle-sample(t-.00001)[k].angle)/.00002;assert.ok(Math.abs(w*30/Math.PI-f[k].rpm)<.01)}}
+assert.equal(sample(.9).delta,240);assert.equal(sample(1.4).delta,120);assert.equal(sample(1.9).locked,0);assert.equal(sample(2.15).locked,2);assert.equal(sample(3.2).engine.rpm,500);

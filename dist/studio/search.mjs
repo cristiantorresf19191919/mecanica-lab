@@ -3,6 +3,7 @@ import {catalog} from '../concepts/catalog.mjs';
 import {names} from './config.mjs';
 const base=new URL('../',import.meta.url),norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export function library(en){const l=en?'en':'es',rows=[],row=(kind,name,path,words='')=>rows.push({kind,name,path:new URL(path,base).href,words});
+ row('lab',en?'Slow motion: first to second':'Cámara lenta: de primera a segunda','studio/upshift.html?lang='+l,'sincronizador rpm manguito embrague synchronizer slow motion gearbox');
  names.forEach((n,i)=>row('lab',n[+en],'studio/lab.html?stage='+i+'&lang='+l,n.join(' ')+' engranaje piñones piñonería gears transmisión'+(i===5?' embrague despiece sincronizadores sincronizador torque manguito clutch synchronizer gearbox exploded':'')));
  for(const t of tracks)for(const a of t.lessons)row('course',a.title[l],'learn/index.html?track='+t.id+'&lesson='+a.id+'&lang='+l,Object.values(t.name).join(' ')+' '+Object.values(a.title).join(' '));
  for(const [id,c] of Object.entries(catalog))row('lab',c.title,'concepts/index.html?id='+id,id+' '+c.insight);

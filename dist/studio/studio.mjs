@@ -18,6 +18,7 @@ function update(){$('view').textContent=front?t('Vista oblicua','Oblique view'):
 function rebuild(){rig?.setup(k,v,{step:v?step:-1,apart});if(front)rig?.view(true,k)}
 function guide(){
  $('shiftGuide').hidden=k!==5;if(k!==5)return;
+ link('slowLink',t('▷ Cámara lenta · de primera a segunda','▷ Slow motion · first to second'),'upshift.html?lang='+l);
  const st=shift(v,step);
  const labels=en?['Flywheel','Cone ring','Sliding sleeve','Clutch disc','Input shaft','Gear mesh','Splined hub','Output flange']:['Volante','Anillo de sincronización','Manguito','Disco de embrague','Eje primario','Contacto entre dientes','Cubo estriado','Brida de salida'];rig?.label(v?labels[step]:t('Salida libre','Free output'));
  $('explode').textContent=apart?t('Rearmar caja','Reassemble'):t('Ver despiece 3D','Explode gearbox');$('explode').setAttribute('aria-pressed',String(apart));
