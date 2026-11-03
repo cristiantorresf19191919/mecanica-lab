@@ -1,0 +1,33 @@
+// Pitch radii = tooth count × module / 2; angular speeds are signed input multiples.
+export const names=[
+ ['Fuerza en un diente','Force at a tooth'],['Un par de engranajes','A gear pair'],['El piñón intermedio','The idler gear'],['Tren compuesto','Compound train'],['Engranajes planetarios','Planetary gears'],['Caja de transmisión','Transmission gearbox']
+];
+export const lessons=[
+ ['El eje aplica un par. En el círculo de paso, ese par equivale a una fuerza tangencial: T = F × r. Aumenta el radio manteniendo 6 N·m y observa por qué la fuerza disminuye.','The shaft applies torque. At the pitch circle this corresponds to tangential force: T = F × r. Increase the radius at a fixed 6 N·m and watch the force fall.'],
+ ['Un diente de entrada hace pasar un diente de salida. Si la salida tiene el doble de dientes, gira media vuelta por cada vuelta de entrada. Cambia la rueda conducida y sigue las marcas blancas.','One input tooth advances one output tooth. Twice as many output teeth means half a turn per input revolution. Change the driven wheel and follow the white marks.'],
+ ['Sigue tres marcas: cada contacto exterior invierte el giro. La rueda intermedia cambia el sentido final respecto a un par simple, pero sus dientes se cancelan en la relación total.','Follow three marks: each external mesh reverses rotation. The idler changes the final direction compared with one pair, but its tooth count cancels out of the overall ratio.'],
+ ['La rueda de 36 dientes comparte eje con el piñón de 12: ambos giran a las mismas rpm. El primero recibe movimiento; el segundo lo entrega a otra etapa. Multiplica las reducciones, no las sumes.','The 36-tooth wheel shares a shaft with a 12-tooth pinion: they turn at the same rpm. One receives motion; the other drives the next stage. Multiply the reductions, do not add them.'],
+ ['El sol impulsa los satélites. Observa dos movimientos distintos: cada satélite gira sobre su eje y su centro puede orbitar con el portasatélites. Cambia la pieza fija y sigue la salida ámbar.','The sun drives the planets. Watch two different motions: each planet spins on its axis and its centre can orbit with the carrier. Change the fixed member and follow the amber output.'],
+ ['Los pares están engranados todo el tiempo. En este corte de dos ejes, las ruedas conducidas giran libres hasta que un acoplamiento une una al eje de salida. Cambia de marcha: solo la pareja seleccionada transmite par a la carga.','All pairs stay in mesh. In this two-shaft cutaway, driven wheels spin freely until a coupling locks one to the output shaft. Shift gear: only the selected pair transmits torque to the load.']
+];
+export function config(k,v,en=false){
+ const t=(a,b)=>en?b:a;
+ return [
+ [t('Radio de paso','Pitch radius'),['20 mm','40 mm','60 mm']],
+ [t('Dientes de salida','Output teeth'),['18 : 18','18 : 36','18 : 54']],
+ [t('Dientes del intermedio','Idler teeth'),['12','18','24']],
+ [t('Segunda etapa','Second stage'),['12 : 24','12 : 36']],
+ [t('Pieza fija','Fixed member'),[t('Corona fija','Fixed ring'),t('Portasatélites fijo','Fixed carrier')]],
+ [t('Marcha','Gear'),[t('Punto muerto','Neutral'),'1 · 12 : 36','2 · 18 : 30','3 · 24 : 24','4 · 30 : 18']]
+ ][k];
+}
+export function ratio(k,v){return [1,-18/[18,36,54][v],18/36,(18/36)*(12/[24,36][v]),v===0?1/4:-1/3,[0,-12/36,-18/30,-1,-30/18][v]][k]}
+export function observation(k,v,en){
+ const t=(es,eng)=>en?eng:es;
+ if(k===0){let r=[20,40,60][v];return ['F = 6 / '+(r/1000)+' = '+(6000/r)+' N',t('Mira el punto de contacto, no el borde exterior del diente. El radio de paso es el brazo usado para convertir par en fuerza.','Look at the pitch circle rather than the tooth tip. Its radius is the lever arm used to convert torque into force.')]}
+ if(k===1){let n=[18,36,54][v];return ['ω₂ / ω₁ = −18 / '+n,t('Pausa cuando la marca del piñón esté arriba. Reanuda y cuenta cuántas vueltas de entrada hacen falta para que la marca de salida regrese.','Pause with the input witness mark at the top. Resume and count the input turns before the output mark returns.')]}
+ if(k===2){let n=[12,18,24][v];return ['(−18/'+n+') × (−'+n+'/36) = +½',t('Cambia solo el intermedio. Su centro cambia de lugar para conservar el engrane. Compara la lectura de salida antes y después.','Change only the idler. Its centre shifts to maintain mesh. Compare the output reading before and after.')]}
+ if(k===3){let n=[24,36][v];return ['(−18/36) × (−12/'+n+') = 1/'+(n/6),t('Mira de lado para separar las dos etapas: la potencia pasa de una cara del eje intermedio a la otra sin otro contacto entre dientes.','Orbit to a side view to separate the stages: power crosses the intermediate shaft without another tooth contact.')]}
+ if(k===4)return v===0?['ωc / ωs = 18 / (18 + 54) = ¼',t('Corona quieta, sol de 18 dientes y corona de 54: cuatro vueltas del sol desplazan el portasatélites una vuelta en el mismo sentido.','Ring held, 18-tooth sun and 54-tooth ring: four sun revolutions carry the planet pins once around in the same direction.')]:['ωr / ωs = −18 / 54 = −⅓',t('Ahora los centros de los satélites no se desplazan. Siguen girando sobre sus pasadores y arrastran la corona en sentido contrario al sol.','The planet centres now stay put. The planets still spin on their pins and drive the ring opposite the sun.')];
+ return [v?'ωout / ωin = −'+[0,12,18,24,30][v]+'/'+[0,36,30,24,18][v]:t('Salida desacoplada','Output uncoupled'),[t('En punto muerto ninguna rueda queda unida a la salida. El modelo parte con el eje de salida detenido; un vehículo en movimiento podría arrastrarlo.','In neutral no wheel is locked to the output. This model starts with the output at rest; a rolling vehicle could drive it.'),t('Primera: el piñón pequeño mueve la rueda grande. A cambio de menor velocidad se obtiene más par para iniciar la marcha.','First: the small pinion drives the large wheel. Lower speed provides greater torque for starting.'),t('Segunda reduce menos. Con las mismas rpm del motor, la salida gira más rápido que en primera y dispone de menos par.','Second has less reduction. At the same engine rpm the output turns faster than in first, with less torque.'),t('Tercera es 1:1 en este banco: iguales rpm en magnitud, pero sentido opuesto porque sigue habiendo un contacto exterior.','Third is 1:1 on this bench: equal speed magnitudes but opposite directions because there is still an external mesh.'),t('Cuarta es sobremarcha: la salida gira más rápido que la entrada. El aumento de velocidad se paga con menor par.','Fourth is overdrive: the output spins faster than the input. Greater speed comes at the cost of torque.')][v]];
+}
