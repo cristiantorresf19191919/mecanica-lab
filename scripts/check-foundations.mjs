@@ -12,3 +12,24 @@ near(state('air',[.5],0).absolute,4);near(state('air',[.5],0).gauge,3);
 assert.ok(state('cylinderforce',[4,0],.1).force>state('cylinderforce',[4,0],.6).force);assert.ok(state('pneudiagnosis',[4,3],.1).force<state('pneudiagnosis',[4,0],.1).force);
 near(state('airchain',[2,4,0],.1).gaugePressure,2);
 console.log('PASS: all 20 bilingual foundations, boundary readings, conservation and causal experiments');
+
+// A teaching comparison must isolate one change and remain reachable with the actual controls.
+const {comparisons} = await import('../dist/foundations/comparisons.mjs');
+assert.deepEqual(Object.keys(comparisons).sort(), Object.keys(foundations).sort());
+for (const [id, trial] of Object.entries(comparisons)) {
+  const controls = foundations[id].controls;
+  const differences = trial.first.filter((v, i) => v !== trial.second[i]).length;
+  assert.equal(differences + Number(trial.phaseA !== trial.phaseB), 1, id);
+  for (const values of [trial.first, trial.second]) {
+    assert.equal(values.length, controls.length, id);
+    values.forEach((value, i) => {
+      const {min, max, step} = controls[i];
+      assert.ok(value >= min && value <= max, id);
+      near((value - min) / step, Math.round((value - min) / step));
+    });
+  }
+}
+near(state('thermal', [200,10], .5).temp, 40 - 20 * Math.exp(-3));
+near(state('ac', [12,50], .75).read.at(-1).value, 144);
+console.log('PASS: 20 controlled A/B experiments use reachable settings and isolate one change');
+near(state('threephase', [50,4], 1/6).lineVoltage, 10 * Math.sqrt(3));
