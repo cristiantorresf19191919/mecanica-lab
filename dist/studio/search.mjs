@@ -7,7 +7,7 @@ export function library(en){const l=en?'en':'es',rows=[],row=(kind,name,path,wor
  row('lab',en?'Healthy vs worn synchronizer':'Sincronizador sano y desgastado','studio/synchro.html?lang='+l,'rasca rascado dientes acoplamiento grinding gear clash primera segunda');
  row('lab',en?'Slow motion: first to second':'Cámara lenta: de primera a segunda','studio/upshift.html?lang='+l,'sincronizador rpm manguito embrague synchronizer slow motion gearbox');
  names.forEach((n,i)=>row('lab',n[+en],'studio/lab.html?stage='+i+'&lang='+l,n.join(' ')+' engranaje piñones piñonería gears transmisión'+(i===5?' embrague despiece sincronizadores sincronizador torque manguito clutch synchronizer gearbox exploded':'')));
- for(const t of tracks)for(const a of t.lessons)row('course',a.title[l],'learn/index.html?track='+t.id+'&lesson='+a.id+'&lang='+l,Object.values(t.name).join(' ')+' '+Object.values(a.title).join(' '));
+ for(const t of tracks)for(const a of t.lessons)row('course',a.title[l],'foundations/index.html?track='+t.id+'&lesson='+a.id+'&lang='+l,Object.values(t.name).join(' ')+' '+Object.values(a.title).join(' '));
  for(const [id,c] of Object.entries(catalog))row('lab',c.title,'concepts/index.html?id='+id,id+' '+c.insight);
  for(const [n,p,k,w] of [['Taller automotriz','autos/index.html','course','carros engine motor'],['Mecánica de bicicletas','bikes/index.html','course','ciclas bikes'],['Física y mecatrónica','index.html#curso','course','fuerzas electromecánica PLC'],['Cambio trasero','bikes/shifting.html','lab','cassette desviador guaya'],['PLC · comparación de ciclos','machines/comparison.html','lab','ladder neumática']])row(k,n,p,w);
  return rows}
