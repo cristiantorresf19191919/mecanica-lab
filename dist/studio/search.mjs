@@ -3,6 +3,7 @@ import {catalog} from '../concepts/catalog.mjs';
 import {names} from './config.mjs';
 const base=new URL('../',import.meta.url),norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export function library(en){const l=en?'en':'es',rows=[],row=(kind,name,path,words='')=>rows.push({kind,name,path:new URL(path,base).href,words});
+ row('course',en?'Gears from first principles':'Engranajes desde cero','studio/gears.html?lang='+l,'teeth torque force speed module dientes fuerza par velocidad planetarios winch');
  row('lab',en?'Healthy vs worn synchronizer':'Sincronizador sano y desgastado','studio/synchro.html?lang='+l,'rasca rascado dientes acoplamiento grinding gear clash primera segunda');
  row('lab',en?'Slow motion: first to second':'Cámara lenta: de primera a segunda','studio/upshift.html?lang='+l,'sincronizador rpm manguito embrague synchronizer slow motion gearbox');
  names.forEach((n,i)=>row('lab',n[+en],'studio/lab.html?stage='+i+'&lang='+l,n.join(' ')+' engranaje piñones piñonería gears transmisión'+(i===5?' embrague despiece sincronizadores sincronizador torque manguito clutch synchronizer gearbox exploded':'')));

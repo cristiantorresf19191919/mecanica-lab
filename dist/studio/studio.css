@@ -11,3 +11,5 @@
 #manualControls[hidden],#jump[hidden],label[hidden]{display:none!important}#receipt:not(:empty){padding:12px;color:var(--ice);font-variant-numeric:tabular-nums}#attempt:disabled{opacity:.5;cursor:default}
 
 .attempt-chart{overflow-x:auto;margin:14px 0}.attempt-chart svg{width:100%;display:block;height:200px}.attempt-chart text{font:12px ui-monospace,monospace;fill:#d1e1e8}.attempt-chart g:focus rect{stroke:#fff;stroke-width:2}.attempt-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;font-size:14px}.series-0{color:#64e6ef}.series-1{color:#ffbe78}.attempt-list{display:grid;gap:6px;max-height:220px;overflow:auto}.attempt-list button{text-align:left;border-radius:8px}.attempt-list [aria-pressed=true]{border-color:var(--ice)}#attemptHistory{scroll-margin-top:12px}#replaySaved[hidden],.attempt-legend[hidden]{display:none}
+
+#chapters{grid-template-columns:repeat(3,minmax(0,1fr))}#explain{grid-template-columns:repeat(2,minmax(0,1fr))}#explain h3{color:var(--ice)}#turns{display:block;font:14px monospace;color:var(--gold);margin-top:8px}@media(max-width:650px){#chapters,#explain{grid-template-columns:1fr} .footbar{flex-wrap:wrap;gap:8px}}
