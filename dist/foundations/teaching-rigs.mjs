@@ -129,25 +129,41 @@ export function bridgeRig({scene, box, cyl, mesh}, lang) {
   const load = box(0, .4, 0, .42, .25, .85, amber);
   segment(scene, plus, minus, .05, amber);
   label(scene, lang === 'es' ? 'Carga' : 'Load', point(0, .85, 0));
-  const dots = Array.from({length: 18}, () => mesh(new T.SphereGeometry(.053, 10, 8), 0xffdc81));
-  return m => {
-    const forward = m.input >= 0;
-    const active = forward ? [0,3] : [1,2];
-    const conducts = m.output > 1e-8;
-    branches.forEach(({wire, body}, i) => {
-      const lit = conducts && active.includes(i);
-      wire.material.color.setHex(lit ? amber : steel);
-      body.material.emissive.setHex(lit ? 0x825018 : 0);
+  const x=2.95;
+  const leads=[plus,minus].map(node=>{
+    const path=[node,point(x,.36,node.z),point(x,.36,Math.sign(node.z)*.19),point(x,.67,Math.sign(node.z)*.19)];
+    path.slice(1).forEach((end,i)=>segment(scene,path[i],end,.045,steel));
+    return path;
+  });
+  cyl(x,1,0,.38,.78,dark);
+  cyl(x,1.4,0,.37,.05,steel);
+  const bands=Array.from({length:12},(_,i)=>cyl(x,.66+i*.061,0,.386,.04,steel));
+  label(scene,'C',point(x,1.72,0));
+  function stream(path,n,color){
+    const dots=Array.from({length:n},()=>mesh(new T.SphereGeometry(.064,8,8),color));
+    return (u,active,reverse=false)=>dots.forEach((dot,i)=>{
+      dot.visible=active;if(!active)return;
+      const q=((u*4+i/n)%1)*(path.length-1),j=Math.floor(q);
+      const k=reverse?path.length-1-j:j;
+      dot.position.copy(path[k]).lerp(path[k+(reverse?-1:1)],q-j);
+      dot.position.y+=.1;
     });
-    load.material.emissive.setHex(conducts ? 0x50300b : 0);
-    const path = [forward ? A : B, plus, minus, forward ? B : A];
-    dots.forEach((dot, i) => {
-      dot.visible = conducts;
-      const progress = ((m.u * 2 + i / dots.length) % 1) * 3;
-      const section = Math.floor(progress);
-      dot.position.copy(path[section]).lerp(path[section + 1], progress - section);
-      dot.position.y += .15;
+  }
+  const diodeStreams=branches.map(b=>stream([b.from,b.to],4,amber));
+  const loadStream=stream([plus,minus],5,amber),capStreams=leads.map(path=>stream(path,7,cyan));
+  return m=>{
+    const active=m.input>=0?[0,3]:[1,2];
+    branches.forEach(({wire,body},i)=>{
+      const lit=m.bridgeCurrent>1e-9 && active.includes(i);
+      wire.material.color.setHex(lit?amber:steel);
+      body.material.emissive.setHex(lit?0x825018:0);
+      diodeStreams[i](m.u,lit);
     });
+    loadStream(m.u,m.current>1e-9);
+    capStreams.forEach((run,i)=>run(m.u,Math.abs(m.capCurrent)>1e-8,i===0?m.capCurrent<0:m.capCurrent>0));
+    const level=m.values[2]?m.output/Math.max(.001,m.values[0]-2*m.values[1]):0;
+    bands.forEach((band,i)=>band.material.color.setHex(i+.5<=12*level?cyan:dark));
+    load.material.emissive.setHex(m.current>0?0x50300b:0);
   };
 }
 
