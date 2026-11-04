@@ -33,3 +33,17 @@ near(state('thermal', [200,10], .5).temp, 40 - 20 * Math.exp(-3));
 near(state('ac', [12,50], .75).read.at(-1).value, 144);
 console.log('PASS: 20 controlled A/B experiments use reachable settings and isolate one change');
 near(state('threephase', [50,4], 1/6).lineVoltage, 10 * Math.sqrt(3));
+const bridge=(cap,load,u)=>state('rectifier',[12,.7,cap,load],u);
+const trough=bridge(100,200,.5);
+near(trough.bridgeCurrent,0);near(trough.capCurrent,-trough.current);
+assert.ok(trough.output>trough.bare && bridge(100,200,.2).capCurrent>0);
+assert.ok(bridge(470,200,.5).ripple<trough.ripple && bridge(100,100,.5).ripple>trough.ripple);
+for(let i=0;i<=200;i++){
+  const u=i/200, m=bridge(100,200,u);
+  near(m.bridgeCurrent,m.current+m.capCurrent);
+  near(m.output,bridge(100,200,u+.5).output);
+  near(bridge(0,200,u).output,m.bare);
+  assert.ok(m.output>=m.bare-1e-9 && m.output<=10.6+1e-9);
+}
+near(state('rectifier',[1,1,100,200],.25).output,0);
+console.log('PASS: bridge cutoff, charge balance, periodicity and ripple under load.');

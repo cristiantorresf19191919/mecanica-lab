@@ -1,3 +1,4 @@
+import {rectifier} from './rectifier-filter.mjs';
 import {engineState,pressState,pneumaticState} from '../machines/model.mjs';
 export function state(id,values,u){const [a,b=0,c=0]=values,theta=u*2*Math.PI,area=Math.PI*.04**2/4,ann=area*.75;let m={u,theta,values},read=[];const r=(es,en,v,unit)=>read.push({es,en,value:v,unit});
 if(id==='torque'){m.torque=a*b*Math.sin(c*Math.PI/180);r('Par','Torque',m.torque,'N·m');r('Brazo perpendicular','Perpendicular arm',b*Math.sin(c*Math.PI/180),'m');}
@@ -7,7 +8,7 @@ else if(id==='thermal'){m.temp=20+a/b*(1-Math.exp(-b*u*600/1000));r('Tiempo','Ti
 else if(id==='nostart'){m.current=a/(.05+b);m.output=m.current*.05;m.input=a;r('Corriente modelo resistivo','Resistive model current',m.current,'A');r('Tensión motor','Motor voltage',m.output,'V');r('Caída en masa','Ground drop',m.current*b,'V');}
 else if(id==='ohm'){m.input=a;m.output=a;m.current=a/b;r('Corriente','Current',1000*m.current,'mA');r('Potencia resistencia','Resistor power',a*a/b,'W');}
 else if(id==='ac'){m.input=a*Math.sin(theta);m.output=m.input;m.current=m.input/1000;r('Instantánea','Instantaneous',m.input,'V');r('RMS','RMS',a/Math.SQRT2,'V');r('Periodo','Period',1000/b,'ms');r('Potencia instantánea','Instantaneous power',m.input*m.current*1000,'mW');}
-else if(id==='rectifier'){m.input=a*Math.sin(theta);m.output=Math.max(0,Math.abs(m.input)-2*b);m.current=m.output/1000;r('Entrada','Input',m.input,'V');r('Salida','Output',m.output,'V');r('Pulsaciones con fuente 50 Hz','Ripple with 50 Hz source',100,'Hz');}
+else if(id==='rectifier'){Object.assign(m,rectifier(values,u));r('Sin filtro','Unfiltered',m.bare,'V');r('En la carga','Across load',m.output,'V');r('Rizado pico a pico','Peak-to-peak ripple',m.ripple,'V');r('Corriente de carga','Load current',1000*m.current,'mA');r('Carga almacenada','Stored charge',1000*m.charge,'mC');}
 else if(id==='opamp'){m.input=a*Math.sin(theta);m.output=Math.max(-12,Math.min(12,m.input*b));Object.assign(m,{t:u*2,angle:theta,a:b,effectiveGain:b,rail:12});r('Entrada','Input',m.input,'V');r('Salida','Output',m.output,'V');r('Pico solicitado','Requested peak',a*b,'V');}
 else if(id==='threephase'){Object.assign(m,{fieldAngle:theta,rotorAngle:theta*(1-b/100),currents:[0,1,2].map(i=>Math.sin(theta-i*2*Math.PI/3))});r('Campo, motor de 2 polos','Field, 2-pole motor',60*a,'rpm');r('Rotor','Rotor',60*a*(1-b/100),'rpm');m.currents.forEach((v,i)=>r('Fase '+(i+1),'Phase '+(i+1),v,'p.u.'));
   // Separate balanced star-source example with a 10 V phase peak.
