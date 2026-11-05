@@ -67,16 +67,17 @@ if (id === 'threephase') {
   $('traceMode').add(new Option(t('Fuente en estrella · tensiones','Star source · voltages'), 'voltage'));
   $('traceMode').onchange = draw;
 }
+let filterLegend;
 if(id==='rectifier'){
-  $('orbit').textContent=t('Las bandas del condensador indican su tensión. Los puntos muestran el sentido de la corriente.','Bands on the capacitor show its voltage. Moving dots show conventional current direction.');
-  $('limit').textContent=t('Fuente ideal de 50 Hz, dos caídas de diodo y carga resistiva. Se muestra el régimen periódico, no el encendido. Cada recorrido dura 20 ms físicos.','Ideal 50 Hz source, two diode drops and a resistive load. This shows settled cycles, not switch-on. Each sweep spans 20 ms of physical time.');
-  const legend=document.createElement('p');
-  legend.textContent=t('Cian: sin condensador · Ámbar: salida con el ajuste actual · Línea blanca: instante del banco 3D.','Cyan: without capacitor · Amber: output at your setting · White line: instant shown on the 3D bench.');
-  $('scope').after(legend);
+  $('orbit').textContent=t('Las bandas de C siguen la tensión filtrada. La barra junto a la carga indica la salida y su marca metálica señala 8 V. REG cambia de verde a naranja al perder regulación.','Bands on C follow the filtered voltage. The bar beside the load shows output, with a metal tick at 8 V. REG turns from green to orange in dropout.');
+  $('limit').textContent=t('Modelo en régimen periódico a 50 Hz. Regulador lineal idealizado de 8 V con caída mínima fija de 1 V, sin corriente de reposo ni límites térmicos. Un recorrido abarca 20 ms.','Settled cycles at 50 Hz. The model uses an 8 V linear regulator with a fixed 1 V dropout, zero quiescent current and no thermal limits. One sweep spans 20 ms.');
+  filterLegend=document.createElement('p');
+  $('scope').after(filterLegend);
 }
 function filterPhase(m){
   const label=!values[2]?t('Sin condensador','Capacitor disconnected'):m.output===0?t('Sin tensión','No voltage'):m.bridgeCurrent===0?t('El condensador alimenta la carga','Capacitor supplies load'):m.capCurrent>1e-8?t('El puente recarga el condensador','Bridge recharges capacitor'):t('Puente alimentando la carga','Bridge feeding load');
-  return fmt(20*u)+' ms · '+label;
+  const mode=m.margin>=0?t('Regulación a 8 V','Holding 8 V'):t('Margen insuficiente','In dropout');
+  return fmt(20*u)+' ms · '+label+(m.enabled?' · '+mode:'');
 }
 // Wave shapes change with the controls. Only the time cursor moves during playback.
 const traceLayer = document.createElement('canvas');
@@ -93,8 +94,12 @@ function plot() {
     canvas.width = traceLayer.width = width;
     traceLayer.height = canvas.height;
     const ctx = traceLayer.getContext('2d');
+    const regulatorOn=id==='rectifier' && values[4];
+    if(filterLegend)filterLegend.textContent=regulatorOn
+      ?t('Cian: filtro · Ámbar: carga regulada · Línea discontinua: mínimo de 9 V a la entrada.','Cyan: filtered input · Amber: regulated load · Dashed line: 9 V minimum input.')
+      :t('Cian: puente sin filtro · Ámbar: carga filtrada con regulador puenteado.','Cyan: bare bridge · Amber: filtered load with regulator bypassed.');
     const limit = id === 'threephase' ? (voltageMode ? 18 : 1)
-      : id === 'opamp' ? Math.max(12, values[0]) : values[0];
+      : regulatorOn ? Math.max(10,values[0]) : id === 'opamp' ? Math.max(12, values[0]) : values[0];
     const unit = id === 'threephase' && !voltageMode ? ' p.u.' : ' V';
     const colors = ['#53dce9', '#f6ae58', '#b7a1ef'];
     ctx.strokeStyle = '#39505f';
@@ -110,8 +115,15 @@ function plot() {
       const phase = i / 240 * (id === 'ac' ? values[1] * .1 : 1);
       return state(id, values, phase);
     });
+    if(regulatorOn){
+      const thresholdY=125-9/limit*100;
+      ctx.save();
+      ctx.setLineDash([5,4]);
+      ctx.strokeStyle='#a6b5c4';
+      ctx.beginPath();ctx.moveTo(left,thresholdY);ctx.lineTo(right,thresholdY);ctx.stroke();ctx.restore();
+    }
     const labels = id === 'threephase' ? (voltageMode ? ['VA','VB','VA−VB'] : ['IA','IB','IC'])
-      : id==='rectifier'?['Vrect','Vload']:id === 'ac' ? ['Vin'] : ['Vin','Vout'];
+      : id==='rectifier'?(regulatorOn?['Vcap','Vout']:['Vrect','Vload']):id === 'ac' ? ['Vin'] : ['Vin','Vout'];
     labels.forEach((label, index) => {
       ctx.strokeStyle = ctx.fillStyle = colors[index];
       ctx.fillText(label, width - labels.length * 40 + index * 40, 14);
@@ -122,7 +134,10 @@ function plot() {
           value = voltageMode ? (index === 2 ? sample.lineVoltage : sample.phaseVoltages[index]) : sample.currents[index];
         }
         const x = left + i / 240 * span;
-        if(id==='rectifier')value=index===0?sample.bare:sample.output;
+        if(id==='rectifier'){
+          const traces=regulatorOn?[sample.output,sample.loadVoltage]:[sample.bare,sample.output];
+          value=traces[index];
+        }
         const y = id==='rectifier'?125-value/limit*100:75-value/limit*52;
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);

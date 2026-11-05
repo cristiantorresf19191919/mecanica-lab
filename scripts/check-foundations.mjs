@@ -47,3 +47,14 @@ for(let i=0;i<=200;i++){
 }
 near(state('rectifier',[1,1,100,200],.25).output,0);
 console.log('PASS: bridge cutoff, charge balance, periodicity and ripple under load.');
+for(const r of [100,1000]){
+  for(let i=0;i<=200;i++){
+    const m=state('rectifier',[12,.7,100,r,1],i/200);
+    near(m.current,m.loadVoltage/r);
+    near(m.bridgeCurrent,m.current+m.capCurrent);
+    near(m.loadVoltage,Math.min(8,Math.max(0,m.output-1)));
+    if(r===1000) near(m.loadVoltage,8);
+  }
+}
+assert.ok(state('rectifier',[12,.7,100,100,1],.5).loadVoltage<7);
+near(state('rectifier',[12,.7,2200,100,1],.5).loadVoltage,8);

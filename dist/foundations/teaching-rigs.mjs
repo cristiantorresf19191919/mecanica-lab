@@ -126,9 +126,18 @@ export function bridgeRig({scene, box, cyl, mesh}, lang) {
     cyl(node.x, node.y, node.z, .12, .28, steel);
     label(scene, text, node.clone().add(point(0, .45, 0)));
   }
-  const load = box(0, .4, 0, .42, .25, .85, amber);
-  segment(scene, plus, minus, .05, amber);
-  label(scene, lang === 'es' ? 'Carga' : 'Load', point(0, .85, 0));
+  const load = box(0, .4, .58, .42, .25, .60, amber);
+  const regulator = box(0,.65,-.65,.62,.54,.48,dark);
+  const tab = box(0,.98,-.74,.57,.16,.13,steel);
+  segment(scene,plus,point(0,.4,-.86),.05,steel);
+  segment(scene,point(0,.4,-.44),minus,.05,amber);
+  const groundPath=[point(-.28,.48,-.65),point(-.48,.48,-.65),point(-.48,.48,1.4),minus];
+  groundPath.slice(1).forEach((end,i)=>segment(scene,groundPath[i],end,.025,steel));
+  label(scene,'REG',point(0,1.28,-.65));
+  label(scene,lang==='es'?'Carga':'Load',point(0,.85,.68));
+  // Output voltage gauge, with a fixed target tick for observing dropout.
+  const gauge=box(.55,.38,.58,.16,1,.16,amber);
+  box(.55,1.13,.58,.31,.035,.27,steel);
   const x=2.95;
   const leads=[plus,minus].map(node=>{
     const path=[node,point(x,.36,node.z),point(x,.36,Math.sign(node.z)*.19),point(x,.67,Math.sign(node.z)*.19)];
@@ -159,6 +168,11 @@ export function bridgeRig({scene, box, cyl, mesh}, lang) {
       body.material.emissive.setHex(lit?0x825018:0);
       diodeStreams[i](m.u,lit);
     });
+    const regulated=m.enabled && m.margin>=0;
+    regulator.material.color.setHex(!m.enabled?steel:regulated?0x368e88:0xb95334);
+    tab.material.emissive.setHex(regulated?0x0c3330:0);
+    gauge.scale.y=Math.max(.005,m.loadVoltage*.095);
+    gauge.position.y=.37+gauge.scale.y/2;
     loadStream(m.u,m.current>1e-9);
     capStreams.forEach((run,i)=>run(m.u,Math.abs(m.capCurrent)>1e-8,i===0?m.capCurrent<0:m.capCurrent>0));
     const level=m.values[2]?m.output/Math.max(.001,m.values[0]-2*m.values[1]):0;
