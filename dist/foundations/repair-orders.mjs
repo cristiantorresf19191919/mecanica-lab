@@ -25,9 +25,74 @@ const panels=[true,false].map(capFirst=>{
   const atSecond=advanceWithPower(cutoff,300,first.on.watts,!capFirst);
   return {panel,capFirst,first,atSecond};
 });
+// Each question names a thermal time and an electrical phase so “dip” has
+// one observable answer even if the same supply holds 8 V at the crest.
+const markerPhase=.554;
+const labels={
+  dip:t('Dip below 8 V','Caer por debajo de 8 V'),
+  cut:t('Cut out','Cortar la salida'),
+  hold:t('Hold 8 V','Mantener 8 V')
+};
+let guide=null;
+const choices=panels.map(({panel})=>{
+  const label=document.createElement('label'),select=document.createElement('select');
+  label.append(panel.querySelector('h2').textContent+' ');
+  select.add(new Option(t('Choose a prediction','Elige una predicción'),''));
+  for(const [key,text] of Object.entries(labels))select.add(new Option(text,key));
+  select.onchange=()=>{$('submitPrediction').disabled=choices.some(choice=>!choice.value);};
+  label.append(select);$('predictions').append(label);return select;
+});
+$('submitPrediction').textContent=t('Commit predictions and replay','Confirmar predicciones y reproducir');
+$('checkpoint').textContent=t('Go to observation','Ir a la observación');
+$('replay').textContent=t('Replay this repair','Repetir esta reparación');
+function guideControls(){
+  const asking=guide?.mode==='ask', running=guide?.mode==='replay', reviewed=guide?.mode==='review';
+  $('guideToggle').textContent=guide?t('Exit guided mode','Salir del modo guiado'):t('Start guided predictions','Iniciar predicciones guiadas');
+  $('guide').hidden=!guide;$('jumps').hidden=Boolean(guide);
+  $('time').disabled=$('phase').disabled=Boolean(guide);
+  $('play').disabled=Boolean(guide)&&!running;
+  $('submitPrediction').hidden=!asking;
+  choices.forEach(select=>select.disabled=!asking);
+  $('submitPrediction').disabled=choices.some(select=>!select.value);
+  $('checkpoint').hidden=!running;$('replay').hidden=!reviewed;$('nextRepair').hidden=!reviewed;
+  $('nextRepair').textContent=guide?.step===1?t('Predict second repair','Predecir la segunda reparación'):t('Finish and explore','Terminar y explorar');
+}
+function ask(step){
+  guide={step,mode:'ask',target:step===1?60:360};playing=false;last=0;
+  seconds=step===1?-1:299.999;phase=markerPhase;
+  choices.forEach(select=>select.value='');
+  $('question').textContent=step===1
+    ?t('Before the first repair: at 60 s and 11.08 ms on the scope, what will each output do?', 'Antes de la primera reparación: a los 60 s y a 11,08 ms en la onda, ¿qué hará cada salida?')
+    :t('Before the second repair: add the missing part to each bench. At 360 s and 11.08 ms, what will each output do?', 'Antes de la segunda reparación: añade la pieza que falta en cada banco. A los 360 s y a 11,08 ms, ¿qué hará cada salida?');
+  $('feedback').textContent=step===1?t('Left receives the larger capacitor. Right receives the heat sink. Both chips start hot.','El izquierdo recibe el condensador mayor. El derecho recibe el disipador. Ambos chips empiezan calientes.'):t('The thermal clock has moved to just before 300 s. Inspect the temperature each chip carries into its next repair.','El reloj térmico está justo antes de 300 s. Observa la temperatura que conserva cada chip antes de repararlo.');
+  guideControls();render();
+}
+function replayRepair(){
+  guide.mode='replay';seconds=guide.step===1?0:300;
+  phase=(markerPhase+1-.75)%1; // Six real seconds advance 0.75 of a scope cycle.
+  playing=true;last=0;
+  $('feedback').textContent=t('Follow the amber output and the chip temperature. Replay pauses at your prediction point.','Sigue la salida ámbar y la temperatura del chip. La reproducción se detiene en el instante de tu predicción.');
+  guideControls();render();
+}
+function observe(){
+  playing=false;seconds=guide.target;phase=markerPhase;guide.mode='review';render();
+  const results=panels.map(({frame,panel},i)=>{
+    const actual=frame.shutdown?'cut':frame.loadVoltage<8?'dip':'hold';
+    const match=choices[i].value===actual;
+    const why=actual==='cut'?t('Protection opened the load while the capacitor stayed charged.','La protección desconectó la carga con el condensador aún cargado.'):actual==='dip'?t('The chip is supplying current, but the capacitor fell below 9 V.','El chip entrega corriente, pero el condensador cayó por debajo de 9 V.'):t('The capacitor stays above 9 V across the cycle and the fins keep the chip cool enough to run.','El condensador se mantiene por encima de 9 V todo el ciclo y las aletas mantienen el chip a temperatura de servicio.');
+    return panel.querySelector('h2').textContent+' · '+(match?t('Correct','Acierto'):t('Different outcome','Resultado diferente'))+' · '+fmt(frame.loadVoltage,2)+' V. '+why;
+  });
+  $('feedback').textContent=results.join(' ');guideControls();
+}
+function leaveGuide(){guide=null;playing=false;guideControls();render();}
+$('guideToggle').onclick=()=>guide?leaveGuide():ask(1);
+$('submitPrediction').onclick=$('replay').onclick=replayRepair;
+$('checkpoint').onclick=observe;
+$('nextRepair').onclick=()=>guide.step===1?ask(2):leaveGuide();
+guideControls();
 function render(){
   $('time').value=Math.round(seconds);$('phase').value=Math.round(phase*1000);
-  $('timeLabel').textContent=seconds<0?t('Before either repair','Antes de reparar'):t('Thermal time','Tiempo térmico')+' · '+fmt(seconds,0)+' s';
+  $('timeLabel').textContent=seconds<0?t('Before either repair','Antes de reparar'):t('Thermal time','Tiempo térmico')+' · '+(guide?.step===2&&guide.mode==='ask'?t('just before 300 s','justo antes de 300 s'):fmt(seconds,0)+' s');
   $('phaseLabel').textContent=t('Electrical instant','Instante eléctrico')+' · '+fmt(20*phase,2)+' ms';
   $('play').textContent=playing?t('Pause both','Pausar ambos'):t('Play both','Reproducir ambos');
   for(const p of panels){
@@ -54,7 +119,8 @@ for(const [time,label] of [[-1,t('Before repairs','Antes de reparar')],[60,t('Af
 $('time').oninput=()=>jump(+$('time').value);
 $('phase').oninput=()=>{playing=false;phase=+$('phase').value/1000;render();};
 $('play').onclick=()=>{if(seconds>=600)seconds=-1;playing=!playing;last=0;render();};
-render();
+if(new URLSearchParams(location.search).get('mode')==='guided')ask(1);
+else render();
 try{
   const {mount}=await import('./scene.mjs');
   for(const p of panels)p.view=mount(p.panel.querySelector('.stage'),'connected','power-supply',lang);
@@ -66,7 +132,9 @@ function frame(now){
   if(visible&&!document.hidden&&now-last>=80){
     if(playing&&last){
       const elapsed=Math.min((now-last)/1000,.3);seconds=Math.min(600,Math.max(0,seconds)+10*elapsed);
-      phase=(phase+elapsed/8)%1;if(seconds>=600)playing=false;render();
+      phase=(phase+elapsed/8)%1;
+      if(guide?.mode==='replay' && seconds>=guide.target)observe();
+      else {if(seconds>=600)playing=false;render();}
     }else for(const p of panels)p.view?.draw(p.frame);
     last=now;
   }

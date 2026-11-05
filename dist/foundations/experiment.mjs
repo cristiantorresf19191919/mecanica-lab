@@ -85,7 +85,10 @@ if(id==='rectifier'){
   const orders=heatLink.cloneNode();
   orders.href='repair-orders.html?lang='+lang;
   orders.textContent=t('Comparar reparaciones en paralelo →','Compare repair orders side by side →');
-  document.querySelector('.guided-pair').before(connected,dual,orders,fault,heatLink);
+  const guided=orders.cloneNode();
+  guided.href=orders.href+'&mode=guided';
+  guided.textContent=t('Predecir el resultado de cada reparación →','Predict each repair outcome →');
+  document.querySelector('.guided-pair').before(connected,dual,orders,guided,fault,heatLink);
   $('orbit').textContent=t('Las bandas de C siguen la tensión filtrada. La barra junto a la carga indica la salida y su marca metálica señala 8 V. REG cambia de verde a naranja al perder regulación.','Bands on C follow the filtered voltage. The bar beside the load shows output, with a metal tick at 8 V. REG turns from green to orange in dropout.');
   $('limit').textContent=t('Modelo en régimen periódico a 50 Hz. Regulador lineal idealizado de 8 V con caída mínima fija de 1 V, sin corriente de reposo ni límites térmicos. Un recorrido abarca 20 ms.','Settled cycles at 50 Hz. The model uses an 8 V linear regulator with a fixed 1 V dropout, zero quiescent current and no thermal limits. One sweep spans 20 ms.');
   filterLegend=document.createElement('p');
