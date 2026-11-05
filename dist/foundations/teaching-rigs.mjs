@@ -145,7 +145,7 @@ export function bridgeRig({scene, box, cyl, mesh}, lang, thermal=false) {
     const ctx=screen.getContext('2d');
     let previous='';
     updateInstrument=m=>{
-      const status=m.shutdown?(lang==='es'?'CORTE TÉRMICO':'THERMAL CUT'):m.margin<0?(lang==='es'?'CAÍDA':'DROPOUT'):'REG · 8 V';
+      const status=m.blind?'OUT '+m.loadVoltage.toFixed(2)+' V':m.shutdown?(lang==='es'?'CORTE TÉRMICO':'THERMAL CUT'):m.margin<0?(lang==='es'?'CAÍDA':'DROPOUT'):'REG · 8 V';
       const reading=m.loss.toFixed(2)+' W    '+m.temperature.toFixed(1)+' °C';
       if(reading+status!==previous){
         ctx.fillStyle='#101e26';ctx.fillRect(0,0,512,104);ctx.textAlign='center';

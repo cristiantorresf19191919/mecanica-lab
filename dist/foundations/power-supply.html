@@ -1,5 +1,10 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connected power supply</title><link rel="stylesheet" href="../studio/studio.css"><link rel="stylesheet" href="foundation.css"><script type="importmap">{"imports":{"three":"../vendor/three.module.js"}}</script></head>
-<body class="experiment"><a id="back" class="heat-link"></a><section class="guided-pair"><h2 id="title"></h2><p id="intro"></p><button id="dip"></button> <button id="hot"></button></section>
+<body class="experiment"><a id="back" class="heat-link"></a><section class="guided-pair"><h2 id="title"></h2><p id="intro"></p><button id="surprise"></button> <button id="dip"></button> <button id="hot"></button></section>
+<section id="challenge" class="guided-pair" hidden>
+<h2 id="caseTitle"></h2><p id="casePrompt"></p>
+<div id="choices"><button id="guessDip"></button> <button id="guessHot"></button></div>
+<button id="verify" hidden></button> <button id="exitCase"></button>
+<p id="caseResult" role="status"></p></section>
 <div class="plate"><span>ANATOMY / 3D</span><strong id="status"></strong></div><div class="stage" id="stage"></div>
 <canvas id="wave" class="scope" width="720" height="150"></canvas><p id="legend" class="note"></p><label class="transport"><span id="cursorLabel"></span><input id="cursor" type="range" min="0" max="1000" value="500"></label><div class="footbar"><button id="play"></button><button id="step">+30 s</button><button id="sink" aria-pressed="false"></button><button id="reset"></button></div>
 <div class="experiment-controls"><label><span id="vin"></span><input id="input" type="range" min="4" max="24" step=".5" value="12"></label><label><span id="capLabel"></span><input id="cap" type="range" min="0" max="2200" step="10" value="100"></label><label><span id="res"></span><input id="load" type="range" min="16" max="500" step="1" value="100"></label></div>

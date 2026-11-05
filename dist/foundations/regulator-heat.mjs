@@ -13,8 +13,10 @@ export function advance(state, seconds, input, resistance, sink) {
   return advanceWithPower(state,seconds,readings(input,resistance,false).loss,sink);
 }
 
+export const thermalResistanceFor = sink => sink ? 18 : 75;
+
 export function advanceWithPower(state, seconds, operatingPower, sink) {
-  const thermalResistance = sink ? 18 : 75;
+  const thermalResistance = thermalResistanceFor(sink);
   const tau = thermalResistance * heatCapacity;
   let {temperature, shutdown} = state;
   let remaining = seconds;
