@@ -63,7 +63,22 @@ function render(){
   if(blind)$('why').textContent=t('Move the cursor between a crest and a trough. Advance the thermal clock and compare what changes.','Mueve el cursor entre una cresta y un valle. Avanza el reloj térmico y compara lo que cambia.');
   [format(m.output)+' V',format(m.ripple,2)+' V',format(m.loadVoltage,2)+' V',format(m.current*1000,0)+' mA',format(m.loss,2)+' W',format(trace.watts,2)+' W',format(thermal.temperature)+' °C',format(thermal.time)+' s'].forEach((value,i)=>meters[i].textContent=value);
 }
-function advance(seconds){thermal=advanceWithPower(thermal,seconds,on.watts,sink);}
+function advance(seconds){
+  if(challenge?.combined && challenge.stage==='diagnose'){
+    // Capture the first cut even when a 30 s step would span a restart.
+    while(seconds>0 && !thermal.shutdown){
+      const dt=Math.min(seconds,1);
+      thermal=advanceWithPower(thermal,dt,on.watts,sink);
+      seconds-=dt;
+    }
+    if(thermal.shutdown){
+      playing=false;
+      $('caseResult').textContent=t('First cut captured. Compare the whole output trace, chip temperature and watts with the cold trace.','Primer corte capturado. Compara la traza completa, la temperatura y los vatios con la traza en frío.');
+    }
+    return;
+  }
+  thermal=advanceWithPower(thermal,seconds,on.watts,sink);
+}
 function preset(hot){
   $('input').value=hot?20:12;$('cap').value=hot?2200:100;$('load').value=hot?32:100;
   thermal=fresh();sink=false;playing=false;phase=.5;settings();render();
@@ -85,11 +100,17 @@ function caseControls(){
   $('challenge').hidden=!active;
   for(const id of ['dip','hot','reset','trial'])$(id).hidden=active;
   $('choices').hidden=!blind;
+  const combined=Boolean(challenge?.combined);
+  $('repairs').hidden=!combined || blind || done;
+  $('replaceCap').disabled=Boolean(challenge?.testedCap || challenge?.pending);
+  $('fitSink').disabled=Boolean(challenge?.testedSink || challenge?.pending);
   $('verify').hidden=!active || blind || done;
+  $('verify').disabled=combined && !challenge.pending;
   $('load').disabled=active;
-  for(const id of ['input','cap','sink'])$(id).disabled=blind || done;
+  for(const id of ['input','cap','sink'])$(id).disabled=blind || done || combined;
 }
 function startCase(){
+  challenge=null;
   const hot=Math.random()<.5;
   const variants=hot?[[20,2200,32],[19,1500,30],[21,1800,36]]:[[12,100,100],[13,60,90],[12,80,120]];
   const [peak,cap,resistance]=variants[Math.floor(Math.random()*variants.length)];
@@ -106,6 +127,7 @@ function startCase(){
 }
 function diagnose(hot){
   if(challenge?.stage!=='diagnose')return;
+  if(challenge.combined){diagnoseCombined(hot);return;}
   if(hot!==challenge.hot){
     $('caseResult').textContent=t('Check again. Does the output return at each crest, or stay off for an entire cycle while the chip cools?','Revisa la evidencia. ¿La salida vuelve en cada cresta o sigue apagada durante todo el ciclo mientras se enfría el chip?');
     return;
@@ -116,6 +138,49 @@ function diagnose(hot){
   $('casePrompt').textContent=t('Repair the supply at the specified load. Change the capacitance, input voltage or heat sink, then run the five-minute test.','Repara la fuente con la carga indicada. Cambia la capacitancia, la tensión de entrada o el disipador y ejecuta la prueba de cinco minutos.');
   caseControls();render();
 }
+$('dual').textContent=t('Combined fault','Avería combinada');
+$('replaceCap').textContent=t('Fit 1500 µF reservoir','Instalar condensador de 1500 µF');
+$('fitSink').textContent=t('Fit heat sink','Instalar disipador');
+function startCombined(){
+  $('input').value=20;$('cap').value=150;$('load').value=20;
+  thermal=fresh();sink=false;playing=false;settings();
+  phase=on.samples.reduce((a,b)=>a.loadVoltage<b.loadVoltage?a:b).u;
+  challenge={combined:true,stage:'diagnose',earlyIdentified:false};
+  $('caseTitle').textContent=t('Cold start → loss of output','Arranque en frío → pérdida de salida');
+  $('casePrompt').textContent=t('At the initial trough the chip is at room temperature. Scrub to the next crest. What causes the first dip? Then run the clock to capture the later cut.','En el valle inicial el chip está a temperatura ambiente. Recorre la onda hasta la cresta. ¿Qué provoca la primera caída? Después avanza el reloj hasta capturar el corte.');
+  $('caseResult').textContent='';caseControls();render();
+}
+function diagnoseCombined(hot){
+  if(!challenge.earlyIdentified){
+    if(hot){
+      $('caseResult').textContent=t('Recall the cold start. The output recovered at each crest while the chip was at 25 °C. Which limit was crossed in the trough?', 'Recuerda el arranque en frío. La salida se recuperaba en cada cresta con el chip a 25 °C. ¿Qué límite se cruzaba en el valle?');
+      return;
+    }
+    challenge.earlyIdentified=true;
+    $('casePrompt').textContent=t('First dip identified. Advance time to the first full cut, then diagnose the second symptom.','Primera caída identificada. Avanza hasta el primer corte total y diagnostica el segundo síntoma.');
+    $('caseResult').textContent=t('The capacitor dipped below 9 V between crests. Watch mean watts and temperature during warm-up.','El condensador cayó por debajo de 9 V entre crestas. Observa la potencia media y la temperatura al calentarse.');
+    return;
+  }
+  if(!thermal.shutdown || !hot){
+    $('caseResult').textContent=thermal.shutdown?t('The capacitor still has voltage throughout the cycle. Check chip temperature and output current.','El condensador mantiene tensión todo el ciclo. Observa la temperatura del chip y la corriente de salida.'):t('Advance the thermal clock until the output stays at zero across an entire cycle.','Avanza el reloj térmico hasta que la salida permanezca en cero durante todo el ciclo.');
+    return;
+  }
+  challenge.stage='repair';playing=false;
+  $('casePrompt').textContent=t('Choose either repair first. Test it at the original input and load before making the other change.','Elige qué reparar primero. Pruébalo con la entrada y carga originales antes del segundo cambio.');
+  $('caseResult').textContent=t('Both diagnoses confirmed. The early dips followed ripple. Later the chip reached 125 °C and disconnected the load even with the capacitor charged.','Ambos diagnósticos confirmados. Al principio las caídas seguían el rizado. Después el chip llegó a 125 °C y desconectó la carga con el condensador aún cargado.');
+  caseControls();render();
+}
+function applyRepair(part){
+  if(!challenge?.combined || challenge.stage!=='repair' || challenge.pending)return;
+  if(part==='cap')$('cap').value=1500;
+  else sink=true;
+  settings();challenge.pending=part;playing=false;
+  $('caseResult').textContent=t('Intervention applied at the current chip temperature. Run the five-minute test to check both limits.','Intervención aplicada a la temperatura actual del chip. Ejecuta la prueba de cinco minutos para comprobar ambos límites.');
+  caseControls();render();
+}
+$('dual').onclick=startCombined;
+$('replaceCap').onclick=()=>applyRepair('cap');
+$('fitSink').onclick=()=>applyRepair('sink');
 function verifyRepair(){
   if(challenge?.stage!=='repair')return;
   playing=false;advance(300);
@@ -126,6 +191,16 @@ function verifyRepair(){
   phase=on.samples.reduce((a,b)=>a.loadVoltage<=b.loadVoltage?a:b).u;
   const evidence=t('Warm-up +5 min. Minimum running output ','Calentamiento +5 min. Salida mínima en marcha ')+format(minOutput,3)+' V. '+t('Projected temperature in continuous operation ','Temperatura prevista en servicio continuo ')+format(steady)+' °C.';
   $('caseResult').textContent=evidence+' '+(pass?t('Repair verified. Scrub a complete cycle to inspect the 8 V trace.','Reparación verificada. Recorre un ciclo completo para inspeccionar la traza de 8 V.'):minOutput<8?t('The trough still needs more input voltage. Adjust the circuit and retest.','Aún falta tensión en el valle. Ajusta el circuito y repite la prueba.'):t('Thermal protection prevents continuous service. Reduce dissipation or improve cooling and retest.','La protección térmica impide el servicio continuo. Reduce la disipación o mejora la refrigeración y repite la prueba.'));
+  if(challenge.combined){
+    if(challenge.pending==='cap')challenge.testedCap=true;
+    if(challenge.pending==='sink')challenge.testedSink=true;
+    challenge.pending=null;
+    if(!pass){
+      $('caseResult').textContent=evidence+' '+(minOutput<8
+        ?t('Cooling passes. The scope still dips at the trough. Choose the remaining repair.','La refrigeración pasa la prueba. La salida aún cae en el valle. Aplica la reparación pendiente.')
+        :t('The filter now holds enough voltage. The chip still cycles into thermal protection. Choose the remaining repair.','El filtro ya mantiene suficiente tensión. El chip aún entra en protección térmica. Aplica la reparación pendiente.'));
+    }
+  }
   if(pass){
     challenge.stage='complete';
     $('casePrompt').textContent=t('The repaired supply holds 8 V at the original load.','La fuente reparada mantiene 8 V con la carga original.');
@@ -136,7 +211,9 @@ $('surprise').onclick=startCase;
 $('guessDip').onclick=()=>diagnose(false);$('guessHot').onclick=()=>diagnose(true);
 $('verify').onclick=verifyRepair;
 $('exitCase').onclick=()=>{challenge=null;caseControls();render();};
-if(new URLSearchParams(location.search).get('mode')==='surprise')startCase();
+const mode=new URLSearchParams(location.search).get('mode');
+if(mode==='combined')startCombined();
+else if(mode==='surprise')startCase();
 else preset(false);
 try{const {mount}=await import('./scene.mjs');view=mount($('stage'),'connected','power-supply',lang);render();}
 catch(error){$('stage').textContent=t('3D unavailable. The scope and meters are ready.','3D no disponible. Puedes usar el osciloscopio y las lecturas.');console.error(error);}
