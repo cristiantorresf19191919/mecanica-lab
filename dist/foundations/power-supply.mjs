@@ -1,3 +1,4 @@
+import {drawSupplyScope} from './supply-scope.mjs';
 import {advanceWithPower,ambient,trip,thermalResistanceFor} from './regulator-heat.mjs';
 import {cycle,supplyMoment} from './supply-model.mjs';
 
@@ -16,6 +17,11 @@ $('reset').textContent=t('Reset bench','Reiniciar banco');
 $('legend').textContent=t('Cyan = capacitor · Amber = load · Dashed = 9 V minimum input · White = 3D instant.','Cian = condensador · Ámbar = carga · Discontinua = mínimo de 9 V · Blanca = instante 3D.');
 $('trial').textContent=t('In the dropout case, scrub from the peak to the valley. In the overheating case, use +30 s until the output cuts out. Attach the sink while hot and advance until 8 V returns.','En el caso de caída, recorre la onda del pico al valle. En el de sobrecalentamiento, pulsa +30 s hasta el corte. Coloca el disipador en caliente y avanza hasta recuperar los 8 V.');
 $('assumptions').textContent=t('50 Hz AC, two 0.7 V diode drops and 1 V regulator dropout. Each trace shows a settled electrical cycle for the current protection state. When disconnected, an ideal capacitor holds the bridge peak. Air is at 25 °C. Shutdown at 125 °C, restart at 100 °C. Playback slows the electrical cycle to 8 s and advances thermal time at 10×.','Alterna de 50 Hz, dos caídas de 0,7 V en el puente y 1 V mínimo en el regulador. Cada traza muestra un ciclo eléctrico estabilizado para el estado térmico actual. Al cortar la carga, el condensador ideal conserva el pico del puente. Ambiente a 25 °C. Corte a 125 °C y rearme a 100 °C. Cada ciclo se reproduce en 8 s y el reloj térmico avanza a 10×.');
+const compare=document.createElement('a');
+compare.className='heat-link';
+compare.href='repair-orders.html?lang='+lang;
+compare.textContent=t('Compare both repair orders in 3D →','Comparar ambos órdenes de reparación en 3D →');
+$('dual').parentElement.after(compare);
 const titles=[t('Capacitor','Condensador'),t('Ripple, peak to peak','Rizado pico a pico'),t('Load voltage','Tensión de carga'),t('Load current','Corriente de carga'),t('Chip power now','Potencia instantánea del chip'),t('Chip power, cycle mean','Potencia media del chip'),t('Junction temperature','Temperatura de unión'),t('Thermal time','Tiempo térmico')];
 const meters=titles.map(title=>{
   const cell=document.createElement('div'), name=document.createElement('small'),value=document.createElement('b');
@@ -28,25 +34,7 @@ function settings(){
   values=[+$('input').value,.7,+$('cap').value,+$('load').value,1];
   on=cycle(values);off=cycle(values,true);
 }
-function scope(samples){
-  const canvas=$('wave'),width=Math.max(260,Math.round(canvas.clientWidth)),height=150;
-  if(canvas.width!==width)canvas.width=width;
-  const ctx=canvas.getContext('2d'),left=42,right=width-12;
-  const max=Math.max(10,values[0]),y=v=>120-95*v/max,x=u=>left+u*(right-left);
-  ctx.clearRect(0,0,width,height);ctx.font='11px monospace';ctx.fillStyle='#c5dce2';
-  ctx.fillText(max+' V',2,25);ctx.fillText('9 V',2,y(9)+3);ctx.fillText('0 V',2,122);
-  ctx.fillText('0 ms',left,143);ctx.fillText('10 ms',x(.5)-15,143);ctx.fillText('20 ms',right-34,143);
-  function rule(x1,y1,x2,y2,color){
-    ctx.strokeStyle=color;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-  }
-  ctx.lineWidth=1;rule(left,120,right,120,'#526675');ctx.setLineDash([4,4]);
-  rule(left,y(9),right,y(9),'#a1b4be');ctx.setLineDash([]);
-  for(const [key,color] of [['output','#53dce9'],['loadVoltage','#f6ae58']]){
-    ctx.lineWidth=2;ctx.strokeStyle=color;ctx.beginPath();
-    samples.forEach((m,i)=>{if(i)ctx.lineTo(x(m.u),y(m[key]));else ctx.moveTo(x(m.u),y(m[key]));});ctx.stroke();
-  }
-  ctx.lineWidth=1;rule(x(phase),13,x(phase),125,'#fff');
-}
+function scope(samples){drawSupplyScope($('wave'),samples,phase,values[0]);}
 function render(){
   const m=supplyMoment(values,phase,thermal.shutdown),trace=thermal.shutdown?off:on;
   const blind=challenge?.stage==='diagnose';
