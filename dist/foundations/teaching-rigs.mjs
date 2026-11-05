@@ -199,3 +199,38 @@ export function chamberForces(scene) {
     show(rod, m.pB * 1e5 * area * .75, piston + .06, -1);
   };
 }
+
+export function regulatorHeatRig({scene,box,cyl},lang) {
+  const chip=box(0,.87,0,.91,.8,.32,dark);
+  box(0,1.37,-.07,.86,.5,.12,steel);
+  const sink=[box(0,1.10,-.23,1.42,1.20,.2,steel)];
+  for(let i=0;i<9;i++) sink.push(box(-.63+i*.158,1.10,-.62,.07,1.20,.65,steel));
+  const terminals=[-.31,0,.31].map(x=>point(x,.18,.25));
+  terminals.forEach((v,i)=>segment(scene,v,point(v.x,.55,.05),.04,steel));
+  const wire=(nodes,color)=>nodes.slice(1).forEach((end,i)=>segment(scene,nodes[i],end,.045,color));
+  box(-2.05,.5,.15,1.0,.64,.96,dark);
+  label(scene,'DC',point(-2.05,1.05,.15));
+  box(1.95,.55,.45,.58,.4,1.0,amber);
+  for(const z of [.18,.34,.68]) box(1.95,.55,z,.59,.41,.065,dark);
+  label(scene,lang==='es'?'Carga':'Load',point(2,1.12,.5));
+  wire([point(-1.57,.3,.05),point(-.31,.21,.05),terminals[0]],cyan);
+  wire([terminals[2],point(.64,.2,-.22),point(1.95,.2,-.22),point(1.95,.5,.01)],amber);
+  wire([point(1.95,.5,.92),point(1.95,.2,1.30),point(-2.05,.2,1.30),point(-2.05,.3,.62)],steel);
+  wire([terminals[1],point(0,.18,1.30)],steel);
+  const panel=document.createElement('canvas');panel.width=512;panel.height=112;
+  const texture=new T.CanvasTexture(panel);
+  const meter=new T.Sprite(new T.SpriteMaterial({map:texture,depthTest:false,toneMapped:false}));
+  meter.position.set(0,2.10,-.25);meter.scale.set(2.85,.63,1);scene.add(meter);
+  const ctx=panel.getContext('2d'), cool=new T.Color(dark),hot=new T.Color(0xff5838);
+  let previous='';
+  return m=>{
+    sink.forEach(fin=>fin.visible=m.sink);
+    chip.material.color.lerpColors(cool,hot,Math.min(1,Math.max(0,(m.temperature-25)/100)));
+    const reading=m.loss.toFixed(2)+' W    '+m.temperature.toFixed(1)+' °C';
+    if(reading!==previous){
+      ctx.fillStyle='#101e26';ctx.fillRect(0,0,512,112);
+      ctx.font='bold 39px monospace';ctx.fillStyle='#fbd187';ctx.textAlign='center';
+      ctx.fillText(reading,256,70);texture.needsUpdate=true;previous=reading;
+    }
+  };
+}

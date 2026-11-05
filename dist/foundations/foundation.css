@@ -9,3 +9,5 @@ body.experiment{min-height:0;height:auto}.foundation-layout article>h2{margin:8p
 .guided-pair p:not(:empty) {margin-top: 10px; color: #dce7eb; max-width: 80ch}
 
 #traceChoice {display: block; padding: 10px 14px}
+
+.heat-link{display:block;padding:14px;color:var(--ice);font-weight:650}
