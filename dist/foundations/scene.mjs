@@ -22,14 +22,14 @@ if(id==='flow') update = flowRig(tools);
 if(kind==='thermal'){const plate=cyl(0,.65,0,1.2,.7,0x72899a);for(let i=0;i<12;i++){const a=i*Math.PI/6;box(1.25*Math.cos(a),.65,1.25*Math.sin(a),.2,.8,.2,0x72899a)}const needle=box(2,1,0,.15,1,.15,gold);update=m=>{plate.material.color.setRGB(Math.min(1,m.temp/150),.4,.35);needle.scale.y=m.temp/100;needle.position.y=.2+m.temp/200;};}
 if(kind==='gas') update = gasRig(tools);
 if(id==='regulator-heat') update = regulatorHeatRig(tools,lang);
-if(id==='rectifier') update = bridgeRig(tools, lang);
+if(id==='rectifier' || id==='power-supply') update = bridgeRig(tools, lang, id==='power-supply');
 if(kind==='circuit' && id!=='rectifier'){
  box(-2,.6,0,1.2,1,1.4,0x526c7c);for(let i=0;i<8;i++)box(-2.45+i*.12,1.12,0,.035,.03,.8,0xb4c6ce);
  const resistor=box(1.8,.4,0,1,.4,.6,gold);for(let i=0;i<4;i++)box(1.45+i*.23,.61,0,.06,.02,.61,0x293947);
  const points=[[-2,.3,-1],[2,.3,-1],[2,.3,1],[-2,.3,1],[-2,.3,-1]].map(x=>new T.Vector3(...x)),path=new T.CatmullRomCurve3(points,false,'catmullrom',.02);mesh(new T.TubeGeometry(path,100,.04,8),cyan);for(const x of [-2,2])for(const z of [-1,1])cyl(x,.3,z,.1,.2,0xbbc9d1);
  const dots=Array.from({length:24},()=>mesh(new T.SphereGeometry(.06,8,8),gold));update=m=>{const travel=id==='ac'?(1-Math.cos(m.theta))*.18:m.u*(id==='ohm'?m.current/.012:1);dots.forEach((d,i)=>{d.position.copy(path.getPoint((i/24+travel)%1));d.visible=Math.abs(m.current)>1e-8;});resistor.material.emissive.setHex(Math.abs(m.current)>.01?0x663300:0x110800)};
 }
-let cut=true;machine?.setCut(true);new ResizeObserver(()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();const f=Math.max(1,1.15/camera.aspect)*(kind==='pneumatic'?1.05:1);if (id === "rectifier" || id === "regulator-heat") camera.position.set(0, 6.8*f, 4.5*f);
+let cut=true;machine?.setCut(true);new ResizeObserver(()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();const f=Math.max(1,1.15/camera.aspect)*(kind==='pneumatic'?1.05:1);if (id === "rectifier" || id === "regulator-heat" || id === "power-supply") camera.position.set(0, 6.8*f, 4.5*f);
 else camera.position.set(7*f,6*f,10*f);orbit.target.set(0,machine?1.8:.8,0);orbit.update();}).observe(host);
 return {draw(m){if(machine){machine.update(m,0,m.u);forces?.(m);}else update(m);orbit.update();renderer.render(scene,camera)},cut(value){cut=value;machine?.setCut(cut)}};
 }

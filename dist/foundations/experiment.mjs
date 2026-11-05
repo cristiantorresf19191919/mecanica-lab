@@ -73,7 +73,10 @@ if(id==='rectifier'){
   heatLink.href='regulator-heat.html?lang='+lang;
   heatLink.className='heat-link';
   heatLink.textContent=t('Explorar el calor del regulador y añadir un disipador →','Explore regulator heating and attach a heat sink →');
-  document.querySelector('.guided-pair').before(heatLink);
+  const connected=heatLink.cloneNode();
+  connected.href='power-supply.html?lang='+lang;
+  connected.textContent=t('Banco conectado · Rizado, potencia y temperatura →','Connected bench · Ripple, power and temperature →');
+  document.querySelector('.guided-pair').before(connected,heatLink);
   $('orbit').textContent=t('Las bandas de C siguen la tensión filtrada. La barra junto a la carga indica la salida y su marca metálica señala 8 V. REG cambia de verde a naranja al perder regulación.','Bands on C follow the filtered voltage. The bar beside the load shows output, with a metal tick at 8 V. REG turns from green to orange in dropout.');
   $('limit').textContent=t('Modelo en régimen periódico a 50 Hz. Regulador lineal idealizado de 8 V con caída mínima fija de 1 V, sin corriente de reposo ni límites térmicos. Un recorrido abarca 20 ms.','Settled cycles at 50 Hz. The model uses an 8 V linear regulator with a fixed 1 V dropout, zero quiescent current and no thermal limits. One sweep spans 20 ms.');
   filterLegend=document.createElement('p');

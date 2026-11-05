@@ -113,7 +113,7 @@ export function flowRig({scene, cyl, box}) {
   };
 }
 
-export function bridgeRig({scene, box, cyl, mesh}, lang) {
+export function bridgeRig({scene, box, cyl, mesh}, lang, thermal=false) {
   const A = point(-2.35, .36, 0), B = point(2.35, .36, 0);
   const plus = point(0, .36, -1.4), minus = point(0, .36, 1.4);
   const branches = [[A, plus], [B, plus], [minus, A], [minus, B]].map(([from, to]) => {
@@ -133,7 +133,29 @@ export function bridgeRig({scene, box, cyl, mesh}, lang) {
   segment(scene,point(0,.4,-.44),minus,.05,amber);
   const groundPath=[point(-.28,.48,-.65),point(-.48,.48,-.65),point(-.48,.48,1.4),minus];
   groundPath.slice(1).forEach((end,i)=>segment(scene,groundPath[i],end,.025,steel));
-  label(scene,'REG',point(0,1.28,-.65));
+  if(!thermal) label(scene,'REG',point(0,1.28,-.65));
+  const fins=thermal?[box(0,.98,-.9,.88,.64,.15,steel),
+    ...Array.from({length:7},(_,i)=>box(-.39+i*.13,.98,-1.12,.04,.64,.36,steel))]:[];
+  let updateInstrument;
+  if(thermal){
+    const screen=document.createElement('canvas');screen.width=512;screen.height=104;
+    const texture=new T.CanvasTexture(screen);
+    const display=new T.Sprite(new T.SpriteMaterial({map:texture,depthTest:false,toneMapped:false}));
+    display.position.set(0,1.8,-1.05);display.scale.set(2.7,.55,1);scene.add(display);
+    const ctx=screen.getContext('2d');
+    let previous='';
+    updateInstrument=m=>{
+      const status=m.shutdown?(lang==='es'?'CORTE TÉRMICO':'THERMAL CUT'):m.margin<0?(lang==='es'?'CAÍDA':'DROPOUT'):'REG · 8 V';
+      const reading=m.loss.toFixed(2)+' W    '+m.temperature.toFixed(1)+' °C';
+      if(reading+status!==previous){
+        ctx.fillStyle='#101e26';ctx.fillRect(0,0,512,104);ctx.textAlign='center';
+        ctx.fillStyle=m.shutdown?'#ff9082':m.margin<0?'#ffd289':'#91e2d0';
+        ctx.font='bold 36px monospace';ctx.fillText(status,256,42);ctx.fillText(reading,256,88);
+        texture.needsUpdate=true;previous=reading+status;
+      }
+      fins.forEach(fin=>fin.visible=m.sink);
+    };
+  }
   label(scene,lang==='es'?'Carga':'Load',point(0,.85,.68));
   // Output voltage gauge, with a fixed target tick for observing dropout.
   const gauge=box(.55,.38,.58,.16,1,.16,amber);
@@ -171,6 +193,11 @@ export function bridgeRig({scene, box, cyl, mesh}, lang) {
     const regulated=m.enabled && m.margin>=0;
     regulator.material.color.setHex(!m.enabled?steel:regulated?0x368e88:0xb95334);
     tab.material.emissive.setHex(regulated?0x0c3330:0);
+    if(updateInstrument){
+      updateInstrument(m);
+      if(m.shutdown) regulator.material.color.setHex(0xe34a49);
+      tab.material.emissive.setRGB(Math.max(0,(m.temperature-25)/150),.015,0);
+    }
     gauge.scale.y=Math.max(.005,m.loadVoltage*.095);
     gauge.position.y=.37+gauge.scale.y/2;
     loadStream(m.u,m.current>1e-9);

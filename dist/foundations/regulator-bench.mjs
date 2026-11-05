@@ -11,6 +11,11 @@ $('back').href=window.parent===window?'index.html?track=electronics&lesson=recti
 $('intro').textContent=t('Set the DC voltage at the regulator input and choose a load. Watch the chip temperature as you run time forward or attach the fins.','Ajusta la tensión continua a la entrada del regulador y elige la carga. Observa la temperatura del chip al avanzar el tiempo o colocar las aletas.');
 $('trial').textContent=t('Try 16 V and 32 Ω. Advance 30 s at a time until protection cuts the output. Attach the heat sink while hot and keep advancing to see when 8 V returns.','Prueba 16 V y 32 Ω. Avanza de 30 en 30 s hasta que la protección corte la salida. Coloca el disipador en caliente y sigue avanzando para ver cuándo vuelven los 8 V.');
 $('assumptions').textContent=t('This bench isolates heating with a steady DC input. The teaching model uses 25 °C air, 1 V dropout, a thermal capacity of 1.5 J/°C and thermal resistance of 75 °C/W bare or 18 °C/W with fins. Protection switches off at 125 °C and restarts at 100 °C.','Este banco aísla el calentamiento con una entrada continua constante. El modelo usa aire a 25 °C, caída mínima de 1 V, capacidad térmica de 1,5 J/°C y resistencia térmica de 75 °C/W sin disipador o 18 °C/W con aletas. La protección corta a 125 °C y rearma a 100 °C.');
+const connected=document.createElement('a');
+connected.className='heat-link';
+connected.href='power-supply.html?lang='+lang;
+connected.textContent=t('Connect the rectifier and capacitor →','Conectar el puente y el condensador →');
+$('back').after(connected);
 const fresh=()=>({temperature:ambient,time:0,shutdown:false});
 let state=fresh(),sink=false,playing=false,view,visualState,last=0;
 const titles=[t('Load voltage','Tensión de carga'),t('Load current','Corriente de carga'),t('Power to load','Potencia en la carga'),t('Heat in regulator','Calor en el regulador'),t('Junction temperature','Temperatura de unión'),t('Thermal time','Tiempo térmico')];

@@ -10,12 +10,16 @@ export function readings(input, resistance, shutdown) {
 }
 
 export function advance(state, seconds, input, resistance, sink) {
+  return advanceWithPower(state,seconds,readings(input,resistance,false).loss,sink);
+}
+
+export function advanceWithPower(state, seconds, operatingPower, sink) {
   const thermalResistance = sink ? 18 : 75;
   const tau = thermalResistance * heatCapacity;
   let {temperature, shutdown} = state;
   let remaining = seconds;
   while (remaining > 0) {
-    const end = ambient + thermalResistance * readings(input, resistance, shutdown).loss;
+    const end = ambient + thermalResistance * (shutdown ? 0 : operatingPower);
     const limit = shutdown ? restart : trip;
     const crosses = shutdown ? end < limit : end > limit;
     const untilSwitch = crosses ? tau * Math.log((temperature - end) / (limit - end)) : Infinity;
