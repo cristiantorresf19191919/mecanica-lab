@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taller de transmisión · Mecánica Lab</title>
+<link rel="stylesheet" href="gear-game.css">
+<script type="importmap">{"imports":{"three":"../vendor/three.module.js"}}</script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span aria-hidden="true">⚙</span>MECÁNICA / LAB</a>
+  <div class="links"><a id="lesson" href="gears.html"></a><a id="language" href="?lang=en">EN</a></div>
+</header>
+<main>
+  <div class="hero"><div><p class="tag" id="kicker"></p><h1 id="heading"></h1></div><p id="summary"></p></div>
+  <div class="route-bar"><div id="route" class="route"></div><button id="sandbox" type="button" aria-pressed="false"></button></div>
+  <section class="console" aria-labelledby="mission">
+    <div class="bench">
+      <div class="bench-top"><div><p class="tag" id="stageCode"></p><h2 id="mission"></h2></div>
+      <div class="views" id="views"></div></div>
+      <div id="stage" class="stage"></div>
+      <div id="legend" class="legend"></div>
+      <div class="telemetry">
+        <div><small id="rpmLabel"></small><strong id="rpm"></strong></div>
+        <div><small id="torqueLabel"></small><strong id="torque"></strong></div>
+        <div><small id="ratioLabel"></small><strong id="ratio"></strong></div>
+      </div>
+    </div>
+    <aside class="build">
+      <p id="missionCopy"></p>
+      <div class="target"><small class="tag" id="targetLabel"></small><strong id="target"></strong><p id="goal"></p></div>
+      <div id="config"></div>
+      <p id="modeNote" class="mode-note"></p>
+      <div class="actions"><button id="run" class="primary" type="button"></button><button id="reset" type="button"></button></div>
+      <p id="feedback" role="status"></p>
+      <button id="next" class="primary" type="button" hidden></button>
+    </aside>
+  </section>
+  <section class="test-track" aria-labelledby="trackTitle">
+    <div class="track-top"><h2 id="trackTitle"></h2><span id="trackDetail"></span></div>
+    <div id="track" class="track"><div id="trackRail"></div><div id="trackToken" aria-hidden="true"></div></div>
+    <div id="segments" class="segments"></div>
+  </section>
+  <section class="explain"><h2 id="mathTitle"></h2><strong id="equation"></strong><p id="explanation"></p><small id="limits"></small></section>
+</main>
+<script type="module" src="gear-game.mjs"></script>
+</body>
+</html>
